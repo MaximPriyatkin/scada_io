@@ -1,0 +1,11 @@
+id	sys	dpt	name	dsc	grp	disable
+1	sdku	ZDV	Pin	Давление на входе	1	
+2	sdku	ZDV	Pout	Давление на выходе	1	
+3	sdku	ZDV	ToOpen	Открыть	3	
+4	sdku	ZDV	ToClose	Закрыть	3	
+5	sdku	ZDV	Opened	Открыта	2	
+6	sdku	ZDV	Closed	Закрыта	2	
+7	sdku	ZDV	SetTimeOpen	Уставка на открытие	4	
+8	sdku	ZDV	SetTimeClose	Уставка на закрытие	4	
+9	sdku	ZDV	AlmMuf	Авария муфты	2	
+10	sdku	ZDV	AlmU	Авария питания	2	
