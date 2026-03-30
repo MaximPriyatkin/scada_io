@@ -1,8 +1,18 @@
+import logging
+from contextlib import contextmanager
+
 import ruamel.yaml
 import sqlite3
+
 CONF_FILE = 'conf.yaml'
 
 _conf_cache = None
+
+
+def create_logger(name: str = 'io'):
+    logging.basicConfig(level=logging.DEBUG)
+    return logging.getLogger(name)
+
 
 def get_nested_value(conf, key):
     keys = key.split('.')
@@ -11,8 +21,9 @@ def get_nested_value(conf, key):
         if isinstance(curr, dict) and k in curr:
             curr = curr[k]
         else:
-            raise KeyError(f'Ключ {k} не найден')
+            raise KeyError(f'Key not found: {k} (in path: {key})')
     return curr
+
 
 def get_conf(key: str):
     global _conf_cache
@@ -22,11 +33,29 @@ def get_conf(key: str):
             _conf_cache = yaml.load(f)
     return get_nested_value(_conf_cache, key)
 
+
+@contextmanager
 def get_db():
     conn = sqlite3.connect(get_conf('db'))
     conn.execute('PRAGMA foreign_keys = ON')
     conn.execute('PRAGMA journal_mode = WAL')
-    return conn
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+IEC_TYPE = {
+    30: "521",  # Type 30 - Single point information (TS)
+    31: "521",  # Type 31 - Single point information with timestamp (TS)
+    36: "526",  # Type 36 - Measured value (TI) - float
+    37: "526",  # Type 37 - Measured value with timestamp (TI)
+    45: "532",  # Type 45 - Single command (TU)
+    46: "532",  # Type 46 - Double command (TU)
+    50: "526",  # Type 50 - Setpoint (TR) - float
+    51: "526",  # Type 51 - Setpoint with timestamp (TR)
+    58: "532",  # Type 58 - Step control command (TU)
+    59: "532",  # Type 59 - Step control command with timestamp
+}
 
 
 if __name__ == '__main__':

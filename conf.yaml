@@ -136,7 +136,7 @@ create:
       updated_at DATETIME,
       PRIMARY KEY (sg, id_limit),
       FOREIGN KEY (sg) REFERENCES sg(id) ON DELETE CASCADE,
-      FOREIGN KEY (type) REFERENCES ref_limit_type(id)
+      FOREIGN KEY (type) REFERENCES alarm_lim_type(id)
     );
   iec_addr: >
     CREATE TABLE IF NOT EXISTS iec_addr (
@@ -341,7 +341,7 @@ sel:
       WHERE a.disable IS NULL OR a.disable = 0
       ORDER BY a.sg, a.id_limit;
   iec_addr_map: |
-    SELECT id as sg, coa, ioa FROM cfg_addr;
+    SELECT id, ca, ioa FROM iec_addr;
 upd:
   sys: 
     sql: |

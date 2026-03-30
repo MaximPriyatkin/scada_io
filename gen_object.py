@@ -1,38 +1,41 @@
 '''
-generate object 
+Generate datapoint object CSV for import
 '''
-
 import itertools
-import common as cm
+import csv
 
+SYS = 'sdku'
+DPT = 'ZDV'
 DSC = ['КП ', ' Задв.']
 PATTERN = ['A_KP_', '_ZDV_']
 COUNT = [3, 10]
 START = [1, 1]
-SYS = 'sdku'
-DPT = 'ZDV'
-
-ranges = [range(START[i], START[i]+COUNT[i]) 
-                for i in range(len(PATTERN))]
-
-names = [
-    ''.join(f'{PATTERN[i]}{num}' for i, num in enumerate(nums))
-    for nums in itertools.product(*ranges)
-]
-
-dscs = [
-    ''.join(f'{DSC[i]}{num}' for i, num in enumerate(nums))
-    for nums in itertools.product(*ranges)    
-]
-
-cnt = 0
-out = 'id	sys	dpt	name	dsc	disable\n'
-for idx, name in enumerate(names):
-    out = f'{out}{cnt}\t{SYS}\t{DPT}\t{name}\t{dscs[idx]}\n'
-    cnt += 1
-fname = 'ref/in/dp_.csv'
-#with open(fname, 'w', encoding='utf-8', newline='\n') as f:
-#    f.write(out)
+FOLDER_OUT = 'ref/in/'
 
 
+def generate(sys=SYS, dpt=DPT, dsc=DSC, pattern=PATTERN,
+             count=COUNT, start=START):
+    ranges = [range(start[i], start[i] + count[i])
+              for i in range(len(pattern))]
 
+    names = [
+        ''.join(f'{pattern[i]}{num}' for i, num in enumerate(nums))
+        for nums in itertools.product(*ranges)
+    ]
+    dscs = [
+        ''.join(f'{dsc[i]}{num}' for i, num in enumerate(nums))
+        for nums in itertools.product(*ranges)
+    ]
+
+    fname = f'{FOLDER_OUT}dp_.csv'
+    with open(fname, 'w', encoding='utf-8', newline='\n') as f:
+        writer = csv.writer(f, delimiter='\t')
+        writer.writerow(['id', 'sys', 'dpt', 'name', 'dsc', 'disable'])
+        for idx, name in enumerate(names):
+            writer.writerow([idx, sys, dpt, name, dscs[idx], ''])
+    return len(names)
+
+
+if __name__ == '__main__':
+    cnt = generate()
+    print(f'Generated {cnt} objects')

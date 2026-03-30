@@ -2,8 +2,8 @@
 '''
 Database import/export utility
 
-This module proviedes functionality to:
-    Export data from database to csv.files (stored in ref/out folder)
+This module provides functionality to:
+    Export data from database to csv files (stored in ref/out folder)
     Import/update database records from csv files (stored in ref/in folder)
 
 Configuration: conf.yaml - contains sql queries and csv structure definitions
@@ -22,14 +22,7 @@ LANG_ENCODE = 'utf-8'
 FILE_EXT = '.csv'
 BATCH_UPDATE = 100
 
-def create_logger():
-    '''
-    defining the logger object for entire utility
-    '''
-    logging.basicConfig(level=logging.DEBUG)
-    log = logging.getLogger('import')
-    return log
- 
+
 def create_db(log: logging.Logger) -> None:
     with c.get_db() as conn:
         cursor = conn.cursor()
@@ -42,29 +35,23 @@ def create_db(log: logging.Logger) -> None:
             cursor.execute(sql)
             conn.commit()
 
+
 def read_db(tbl: str, log: logging.Logger) -> int:
     '''
-    Export data from a database tables to to csv files
-
-    Read data from the specified table using a configured SQL query,
-    and writes the result to a tab-separated csv file with headers.
+    Export data from a database table to a csv file.
 
     Args:
-        tbl(str): Table name used to look up sql query and column
-        definitions in configurations (exp.{tbl}.sql and exp.{tbl}.cols)
+        tbl: Table name used to look up sql query and column
+             definitions in configuration (exp.{tbl}.sql and exp.{tbl}.cols)
+        log: Logger instance
 
-    Return:
-        int: Number of row exporter to csv file
-
-    Raises:
-        KeyError: If configuration for the table is not found
-        Exception: If database query fails
+    Returns:
+        Number of rows exported to csv file
     '''
-    # create output folder if not exists, without error
     os.makedirs(FOLDER_OUT, exist_ok=True)
     sql = c.get_conf(f'exp.{tbl}.sql')
     if not sql:
-        raise ValueError(f'No SQL query configured for the exp.{tbl}.sql')
+        raise ValueError(f'No SQL query configured for exp.{tbl}.sql')
     try:
         with c.get_db() as conn:
             cursor = conn.cursor()
@@ -81,31 +68,31 @@ def read_db(tbl: str, log: logging.Logger) -> int:
     except Exception as e:
         log.error(f'Failed export {tbl}: {e}')
         raise
-    else:
-        return cnt_row
+    return cnt_row
+
 
 def upd_db(tbl: str, log: logging.Logger) -> int:
     '''
-    Update database records from a csv file
+    Update database records from a csv file.
 
-    Reads data from csv file and performs batch updates of the specified table
+    Reads data from csv file and performs batch updates of the specified table.
+    Falls back to row-by-row insert on batch failure.
 
     Args:
-        tbl(str): table name used to look up the sql update statement in configuration
-        (upd.{tbl})
+        tbl: Table name used to look up the sql update statement in configuration
+        log: Logger instance
 
     Returns:
-        int: Number of records successfully updated
+        Number of records successfully updated
     '''
-
     os.makedirs(FOLDER_IN, exist_ok=True)
     try:
         conf = c.get_conf(f'upd.{tbl}')
     except KeyError as e:
-        raise ValueError(f'No config for the upd.{tbl} : {e}')
+        raise ValueError(f'No config for upd.{tbl}: {e}')
     sql = conf.get('sql')
     if not sql:
-        raise ValueError(f'No SQL query configured for the upd.{tbl} ')
+        raise ValueError(f'No SQL query configured for upd.{tbl}')
     req_fields = conf.get('required', [])
     fname = conf.get('fname', tbl)
     csv_file = f'{FOLDER_IN}{fname}{FILE_EXT}'
@@ -135,7 +122,7 @@ def upd_db(tbl: str, log: logging.Logger) -> int:
     if not records:
         log.warning(f'No valid records in {tbl} (skipped: {skipped})')
         return 0
-    use_row_by_row = False
+
     with c.get_db() as conn:
         cursor = conn.cursor()
         try:
@@ -145,34 +132,30 @@ def upd_db(tbl: str, log: logging.Logger) -> int:
             return len(records)
         except Exception as e:
             conn.rollback()
-            log.warning(f'FK violation, maybe: {e}, switch to row-by-row')
-            use_row_by_row = True
-        conn.commit()
-    if use_row_by_row:
-        updated = 0
-        with c.get_db() as conn:
-            cursor = conn.cursor()
-            for idx, record in enumerate(records):
-                try:
-                    cursor.execute(sql, record)
-                    updated +=1
-                    if updated % BATCH_UPDATE == 0:
-                        conn.commit()
-                except Exception as e:
-                    conn.rollback()
-                    log.debug(f'Error to record {record} : {e}')
-            conn.commit()
+            log.warning(f'Batch failed: {e}, switching to row-by-row')
 
+    updated = 0
+    errors = 0
+    with c.get_db() as conn:
+        cursor = conn.cursor()
+        for record in records:
+            try:
+                cursor.execute(sql, record)
+                updated += 1
+                if updated % BATCH_UPDATE == 0:
+                    conn.commit()
+            except Exception as e:
+                log.debug(f'Skipped record {record}: {e}')
+                errors += 1
+        conn.commit()
+    log.info(f'Row-by-row: updated {updated}, errors {errors}, skipped {skipped}')
+    return updated
 
 
 def run_exp(log: logging.Logger) -> None:
     '''
-    Execute export for all tables defined in the configuration
-    
-    Itterates through all table configuration under 'exp' in conf.yaml,
-    export each table to its respective CSV file, and logs export
-    statics.
-    '''    
+    Execute export for all tables defined in the configuration.
+    '''
     try:
         tables = c.get_conf('exp')
         if not tables:
@@ -180,19 +163,24 @@ def run_exp(log: logging.Logger) -> None:
             return
         for tbl in tables:
             try:
-                cnt_row = read_db(tbl, log)  # passing the logger object on
+                cnt_row = read_db(tbl, log)
                 log.info(f'Exported {cnt_row} rows to {FOLDER_OUT}{tbl}{FILE_EXT}')
             except Exception as e:
                 log.error(f'Failed to export {tbl}: {e}')
     except KeyError as e:
         log.error(f'Configuration error: {e}')
-        raise    
+        raise
 
-def run_relation_sg(log: logging.Logger)-> None:
+
+def run_exp_sg(log: logging.Logger) -> None:
+    '''
+    Exports signals to generalization csv file for use
+    in configuration MEK 104 servers  
+    '''
     sql = '''
-    SELECT 
+    SELECT
     ROW_NUMBER() OVER (ORDER BY dp.id, dpe.id) as id,
-    sys.name || ":" || dp.name || '.' || dpe.name as name, 
+    sys.name || ":" || dp.name || '.' || dpe.name as name,
     dp.dsc || ' ' || dpe.dsc as dsc,
     grp.type as iec_asdu
     FROM dp
@@ -206,59 +194,185 @@ def run_relation_sg(log: logging.Logger)-> None:
         cursor.execute(sql)
         cols = [desc[0] for desc in cursor.description]
         data = [dict(zip(cols, row)) for row in cursor.fetchall()]
-    
-    def_threshold = {45:None, 50:None, 30:0, 36:0.1}
-    def_conv = {36:'0,4,10,20'}
+
+    def_threshold = {45: None, 50: None, 30: 0, 36: 0.1}  # For example threshold float = 0.1
+    def_conv = {36: '0,4,10,20'}  # For example 4...20Ma for 0...10MPa
 
     kps = {}
     for row in data:
-        split_name = row['name'].split('_')
-        kp = split_name[2]
+        # Get number PLC(kp) for set common address
+        parts = row['name'].split('_')
+        if len(parts) < 3:
+            log.warning(f'Unexpected name format: {row["name"]}, skipping')
+            continue
+        kp = parts[2]
         if kp not in kps:
             kps[kp] = 0
         else:
             kps[kp] += 1
-        asdu =  row['iec_asdu']
+        asdu = row['iec_asdu']
         row['iec_ca'] = kp
         row['iec_ioa'] = kps[kp]
-        conv = def_conv.get(asdu, None)
-        row['conv'] = conv
-        th = def_threshold.get(asdu, None)
-        row['threshold'] = th
+        row['conv'] = def_conv.get(asdu, None)
+        row['threshold'] = def_threshold.get(asdu, None)
         row['iec_cot'] = None
-    with open('ref/in/sg_.csv', 'w', encoding=LANG_ENCODE, newline='') as f:
-        fieldnames = ['id','name','dsc','disable','iec_asdu','iec_ca','iec_ioa','iec_cot','threshold','conv']
-        writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=CSV_DELIM)
+
+    out_file = f'{FOLDER_OUT}sg_all{FILE_EXT}'
+    fieldnames = ['id', 'name', 'dsc', 'disable', 'iec_asdu',
+                  'iec_ca', 'iec_ioa', 'iec_cot', 'threshold', 'conv']
+    with open(out_file, 'w', encoding=LANG_ENCODE, newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames,
+                                delimiter=CSV_DELIM, extrasaction='ignore')
         writer.writeheader()
         writer.writerows(data)
-          
+    log.info(f'Signal file written: {out_file} ({len(data)} rows)')
 
+def create_sg_rel(log: logging.Logger) -> None:
+    '''
+    Filling in table of relationships between signals,data points,
+    and datapoints elements
 
+    todo: this function is made for testing only, so it runs slowly.
+    I need to add indexes, temporary tables, perform inserts one at a time
+    to avoid violating uniqueness
+    '''
+    prefix = 'sdku:'
+    sql = '''
+    INSERT INTO sg_rel (sg, dp, dpe)
+    SELECT DISTINCT 
+        sg.id, 
+        dp.id, 
+        dpe.id 
+    FROM sg
+    JOIN iec_addr ad ON sg.id = ad.id
+    JOIN dp ON dp.name = CASE 
+        WHEN INSTR(sg.name, '.') > 0 
+        THEN SUBSTR(sg.name, LENGTH(?) + 1, INSTR(sg.name, '.') - LENGTH(?) - 1)
+        ELSE NULL END
+    JOIN dpe ON dpe.name = CASE 
+        WHEN INSTR(sg.name, '.') > 0 
+        THEN SUBSTR(sg.name, INSTR(sg.name, '.') + 1)
+        ELSE NULL END
+    WHERE sg.name LIKE ? || '%.%';
+    '''
+    with c.get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute("PRAGMA journal_mode = WAL")
+        cursor.execute("PRAGMA synchronous = OFF")
+        try:
+            cursor.execute(sql, (prefix, prefix, prefix))
+            conn.commit()
+            log.info(f"Import completed. Добавлено строк: {cursor.rowcount}")
+        except conn.Error as e:
+            log.warning(f"Error executed SQL: {e}")
+            conn.rollback()
+        finally:
+            conn.close()
 
-def main():
-    log = create_logger()
-    # Create tables and database if not exists
-    sel_oper = input('Create table? [Y,N] ').upper()
-    if sel_oper == 'Y':
-        create_db(log)
-    # Run export for all configured tables
-    sel_oper = input('Export file [Y,N] ').upper()
-    if sel_oper == 'Y':
-        run_exp(log)
+def exp_winccoa(is_server: bool, log: logging.Logger):
+    '''
+    Export signals in dpl file for WinCC OA
+    Args:
+        is_server - select direction for signals
+    '''
+    sql_dp = '''
+    SELECT dp.name, dpt.name, 0 FROM sg_rel
+    JOIN dp ON dp.id = sg_rel.dp
+    JOIN dpt ON dpt.id = dp.dpt 
+    '''
+    sql_distrib = '''
+    SELECT 
+    ?, 
+    dp.name || "." || dpe.name,
+    dpt.name,
+    ? as type,
+    ? as drv 
+    FROM sg_rel as sr
+    JOIN iec_addr ON sr.sg = iec_addr.id
+    JOIN dp ON dp.id = sr.dp
+    JOIN dpe ON dpe.id = sr.dpe
+    JOIN dpt ON dpt.id = dp.dpt 
+    '''
+    sql_addr = '''
+    SELECT 
+    dp.name || "." || dpe.name,
+    dpt.name,
+    iec_addr.asdu,
+    iec_addr.ca,
+    iec_addr.ioa
+    FROM sg_rel as sr
+    JOIN iec_addr ON sr.sg = iec_addr.id
+    JOIN dp ON dp.id = sr.dp
+    JOIN dpe ON dpe.id = sr.dpe
+    JOIN dpt ON dpt.id = dp.dpt 
+    '''
+    
+    with c.get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute(sql_dp)
+        dp = cursor.fetchall()
+        header = ('# ascii dump of database\n\n# Datapoint/DpId\n'
+                  'DpName\tTypeName\tID\n')
+        _write_dpl('dp.dpl', dp, header)
+        cursor.execute(sql_distrib, ('ASC (1)/0', '56', r'\2'))
+        distrib = cursor.fetchall()
+        header = ('# ascii dump of database\n\n# DistributionInfo\n'
+                  'Manager/User\tElementName\tTypeName\t'
+                  '_distrib.._type\t_distrib.._driver\n')
+        _write_dpl('distrib.dpl', distrib, header)
+        cursor.execute(sql_addr)
+        header =('# ascii dump of database\n\n# PeriphAddrMain\n'
+                'Manager/User\tElementName\tTypeName\t_address.._type\t_address.._reference\t'
+                '_address.._poll_group\t_address.._connection\t_address.._offset\t'
+                '_address.._subindex\t_address.._direction\t_address.._internal\t'
+                '_address.._lowlevel\t_address.._active\t_address.._start\t_address.._interval\t'
+                '_address.._reply\t_address.._datatype\t_address.._drv_ident\n')
+        addr = []
+        row = cursor.fetchone()
+        while row:
+            ref = 'addr'
+            dpe = row[0]
+            dpt = row[1]
+            asdu = row[2]
+            num_con = row[4]
+            ca = f'{(row[4] >> 8) & 0xFF}.{row[4] & 0xFF}'
+            ioa = f'{(row[4] >> 16) & 0xFF}.{(row[4] >> 8) & 0xFF}.{row[4] & 0xFF}'
+            if asdu < 44:
+                direct = '\\5' if is_server else '\\2'
+            else:
+                direct = '\\2' if is_server else '\\5'            
+            ref = f'KP_{num_con}-{asdu}.{ca}.{ioa}'
+            iec_type = c.IEC_TYPE.get(asdu, '532')
+            line = ('ASC (1)/0', 
+                    dpe,  # KP_1_ZDV_1.TU.ToOpen
+                    dpt,  # ZDV
+                    '16',
+                    ref, # "CLN1-45.0.1.0.0.1"
+                    '', '', 0, 0,
+                    direct, # \5
+                    '0', '0', '1', '01.01.1970 00:00:00.000', '01.01.1970 00:00:00.000', '01.01.1970 00:00:00.000',
+                    iec_type, 
+                    'IEC')
+            addr.append(line)
+            row = cursor.fetchone()
+        print(is_server)
+        if is_server:
+            fname = 'addr_srv.dpl'
+        else:
+            fname = 'addr_cln.dpl'            
+        _write_dpl(fname, addr, header)
 
-    # Import updates for specifiec tables
-    # Each updates is independent - failure is one doesn't affect others
-    sel_oper = input('Import data [Y,N] ').upper()
-    if sel_oper == 'Y':        
-        for table in ['sys', 'dpt', 'grp', 'dpe', 'dp', 'sg', 'iec_addr']:
-            try:
-                upd_db(table, log)
-            except Exception as e:
-                log.error(f'Failed to update {table}: {e}')
-    sel_oper = input('Export signal [Y,N]').upper()
-    if sel_oper == 'Y':
-        run_relation_sg(log)
+    #if is_server and asdu > 44:
+    #    direct = '\5'
 
+def _write_dpl(fname: str, data:list, header:str) -> None:
+    out_file = f'{FOLDER_OUT}{fname}'
+    with open(out_file, 'w', encoding=LANG_ENCODE) as f:
+        f.write(header)
+        for row in data:
+            line = '\t'.join(str(item) for item in row)
+            f.write(line + '\n')
 
 if __name__ == '__main__':
-    main()            
+    log = c.create_logger('db_editor')
+    run_exp(log)
