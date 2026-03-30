@@ -355,7 +355,7 @@ def exp_winccoa(is_server: bool, log: logging.Logger):
                     'IEC')
             addr.append(line)
             row = cursor.fetchone()
-        print(is_server)
+
         if is_server:
             fname = 'addr_srv.dpl'
         else:
