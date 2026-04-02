@@ -66,7 +66,6 @@ def _cmd_exp_wcc(args, log):
     '''
     export for wincc oa
     '''
-    print(args[0])
     if args[0] == 'srv':
         is_server = True
     else:

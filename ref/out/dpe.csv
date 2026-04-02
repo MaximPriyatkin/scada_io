@@ -9,3 +9,5 @@ id	sys	dpt	name	dsc	grp	disable
 8	sdku	ZDV	SetTimeClose	Уставка на закрытие	4	
 9	sdku	ZDV	AlmMuf	Авария муфты	2	
 10	sdku	ZDV	AlmU	Авария питания	2	
+11	sdku	MNA	State.On	В работе	2	
+12	sdku	MNA	State.Off	Остановлен	2	

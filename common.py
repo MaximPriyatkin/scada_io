@@ -44,7 +44,7 @@ def get_db():
     finally:
         conn.close()
 
-IEC_TYPE = {
+IEC_ADDR_TYPE = {
     30: "521",  # Type 30 - Single point information (TS)
     31: "521",  # Type 31 - Single point information with timestamp (TS)
     36: "526",  # Type 36 - Measured value (TI) - float
@@ -55,6 +55,14 @@ IEC_TYPE = {
     51: "526",  # Type 51 - Setpoint with timestamp (TR)
     58: "532",  # Type 58 - Step control command (TU)
     59: "532",  # Type 59 - Step control command with timestamp
+}
+
+IEC_VAL_TYPE = {
+    30: 23,  # bool
+    32: 21,  # int
+    36: 22,  # float
+    45: 23,  # bool
+    50: 22   # float
 }
 
 

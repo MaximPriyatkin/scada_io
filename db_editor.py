@@ -24,14 +24,21 @@ BATCH_UPDATE = 100
 
 
 def create_db(log: logging.Logger) -> None:
+    conf = c.get_conf('create')
     with c.get_db() as conn:
         cursor = conn.cursor()
-        order = c.get_conf('create.order')
+        order = conf['order']
         for tbl, vl in order.items():
             if vl == 0:
                 continue
-            sql = c.get_conf('create.' + tbl)
+            sql = conf[tbl]
             log.info(f'create db {tbl}')
+            cursor.execute(sql)
+            sql = conf['trg_ins']
+            sql = sql.replace('{tbl}', tbl)
+            cursor.execute(sql)
+            sql = conf['trg_upd']
+            sql = sql.replace('{tbl}', tbl)
             cursor.execute(sql)
             conn.commit()
 
@@ -177,21 +184,10 @@ def run_exp_sg(log: logging.Logger) -> None:
     Exports signals to generalization csv file for use
     in configuration MEK 104 servers  
     '''
-    sql = '''
-    SELECT
-    ROW_NUMBER() OVER (ORDER BY dp.id, dpe.id) as id,
-    sys.name || ":" || dp.name || '.' || dpe.name as name,
-    dp.dsc || ' ' || dpe.dsc as dsc,
-    grp.type as iec_asdu
-    FROM dp
-    JOIN dpe ON dpe.dpt = dp.dpt
-    JOIN dpt ON dpe.dpt = dpt.id
-    JOIN sys ON sys.id = dpt.sys
-    JOIN grp ON grp.id = dpe.grp
-    '''
+    conf = c.get_conf('exp.sg')
     with c.get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute(sql)
+        cursor.execute(conf['sql'])
         cols = [desc[0] for desc in cursor.description]
         data = [dict(zip(cols, row)) for row in cursor.fetchall()]
 
@@ -217,15 +213,12 @@ def run_exp_sg(log: logging.Logger) -> None:
         row['threshold'] = def_threshold.get(asdu, None)
         row['iec_cot'] = None
 
-    out_file = f'{FOLDER_OUT}sg_all{FILE_EXT}'
-    fieldnames = ['id', 'name', 'dsc', 'disable', 'iec_asdu',
-                  'iec_ca', 'iec_ioa', 'iec_cot', 'threshold', 'conv']
-    with open(out_file, 'w', encoding=LANG_ENCODE, newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames,
+    with open(conf['fname'], 'w', encoding=LANG_ENCODE, newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=conf['cols'],
                                 delimiter=CSV_DELIM, extrasaction='ignore')
         writer.writeheader()
         writer.writerows(data)
-    log.info(f'Signal file written: {out_file} ({len(data)} rows)')
+    log.info(f'Signal file written: {conf["fname"]} ({len(data)} rows)')
 
 def create_sg_rel(log: logging.Logger) -> None:
     '''
@@ -236,31 +229,11 @@ def create_sg_rel(log: logging.Logger) -> None:
     I need to add indexes, temporary tables, perform inserts one at a time
     to avoid violating uniqueness
     '''
-    prefix = 'sdku:'
-    sql = '''
-    INSERT INTO sg_rel (sg, dp, dpe)
-    SELECT DISTINCT 
-        sg.id, 
-        dp.id, 
-        dpe.id 
-    FROM sg
-    JOIN iec_addr ad ON sg.id = ad.id
-    JOIN dp ON dp.name = CASE 
-        WHEN INSTR(sg.name, '.') > 0 
-        THEN SUBSTR(sg.name, LENGTH(?) + 1, INSTR(sg.name, '.') - LENGTH(?) - 1)
-        ELSE NULL END
-    JOIN dpe ON dpe.name = CASE 
-        WHEN INSTR(sg.name, '.') > 0 
-        THEN SUBSTR(sg.name, INSTR(sg.name, '.') + 1)
-        ELSE NULL END
-    WHERE sg.name LIKE ? || '%.%';
-    '''
+    sql = c.get_conf('upd.sg_rel.sql')    
     with c.get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute("PRAGMA journal_mode = WAL")
-        cursor.execute("PRAGMA synchronous = OFF")
         try:
-            cursor.execute(sql, (prefix, prefix, prefix))
+            cursor.execute(sql)
             conn.commit()
             log.info(f"Import completed. Добавлено строк: {cursor.rowcount}")
         except conn.Error as e:
@@ -275,52 +248,49 @@ def exp_winccoa(is_server: bool, log: logging.Logger):
     Args:
         is_server - select direction for signals
     '''
-    sql_dp = '''
-    SELECT dp.name, dpt.name, 0 FROM sg_rel
-    JOIN dp ON dp.id = sg_rel.dp
-    JOIN dpt ON dpt.id = dp.dpt 
-    '''
-    sql_distrib = '''
-    SELECT 
-    ?, 
-    dp.name || "." || dpe.name,
-    dpt.name,
-    ? as type,
-    ? as drv 
-    FROM sg_rel as sr
-    JOIN iec_addr ON sr.sg = iec_addr.id
-    JOIN dp ON dp.id = sr.dp
-    JOIN dpe ON dpe.id = sr.dpe
-    JOIN dpt ON dpt.id = dp.dpt 
-    '''
-    sql_addr = '''
-    SELECT 
-    dp.name || "." || dpe.name,
-    dpt.name,
-    iec_addr.asdu,
-    iec_addr.ca,
-    iec_addr.ioa
-    FROM sg_rel as sr
-    JOIN iec_addr ON sr.sg = iec_addr.id
-    JOIN dp ON dp.id = sr.dp
-    JOIN dpe ON dpe.id = sr.dpe
-    JOIN dpt ON dpt.id = dp.dpt 
-    '''
+    conf = c.get_conf('exp_wcc')
     
     with c.get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute(sql_dp)
+        cursor.execute(conf['dpt'])
+        header = ('# ascii dump of database\n\n# DpType\n'
+                  'TypeName\n')
+        row = cursor.fetchone()
+        dpType = []
+        dpt = ''
+        while row:
+            if row[0] != dpt:
+                dpt = row[0]
+                line = (f'{dpt}.{dpt}','1#0')
+                dpType.append(line)
+            parts = row[1].split('.')
+            tab = 0
+            dpe_type = 1
+            for name in parts:
+                if tab == len(parts) - 1:
+                    dpe_type = c.IEC_VAL_TYPE.get(row[2], 23)   
+                line = ('\t'*tab, name, f'{dpe_type}#0')
+                tab += 1
+                dpType.append(line)
+            row = cursor.fetchone()
+        _write_dpl('dpt.dpl', dpType, header)            
+        
+
+        cursor.execute(conf['dp'])
         dp = cursor.fetchall()
         header = ('# ascii dump of database\n\n# Datapoint/DpId\n'
                   'DpName\tTypeName\tID\n')
         _write_dpl('dp.dpl', dp, header)
-        cursor.execute(sql_distrib, ('ASC (1)/0', '56', r'\2'))
+        
+        cursor.execute(conf['distrib'], ('ASC (1)/0', '56', r'\2'))
+        
         distrib = cursor.fetchall()
         header = ('# ascii dump of database\n\n# DistributionInfo\n'
                   'Manager/User\tElementName\tTypeName\t'
                   '_distrib.._type\t_distrib.._driver\n')
         _write_dpl('distrib.dpl', distrib, header)
-        cursor.execute(sql_addr)
+        
+        cursor.execute(conf['iec_addr'])
         header =('# ascii dump of database\n\n# PeriphAddrMain\n'
                 'Manager/User\tElementName\tTypeName\t_address.._type\t_address.._reference\t'
                 '_address.._poll_group\t_address.._connection\t_address.._offset\t'
@@ -334,15 +304,15 @@ def exp_winccoa(is_server: bool, log: logging.Logger):
             dpe = row[0]
             dpt = row[1]
             asdu = row[2]
-            num_con = row[4]
-            ca = f'{(row[4] >> 8) & 0xFF}.{row[4] & 0xFF}'
+            num_con = row[3]
+            ca = f'{(row[3] >> 8) & 0xFF}.{row[3] & 0xFF}'
             ioa = f'{(row[4] >> 16) & 0xFF}.{(row[4] >> 8) & 0xFF}.{row[4] & 0xFF}'
             if asdu < 44:
                 direct = '\\5' if is_server else '\\2'
             else:
                 direct = '\\2' if is_server else '\\5'            
             ref = f'KP_{num_con}-{asdu}.{ca}.{ioa}'
-            iec_type = c.IEC_TYPE.get(asdu, '532')
+            iec_type = c.IEC_ADDR_TYPE.get(asdu, '532')
             line = ('ASC (1)/0', 
                     dpe,  # KP_1_ZDV_1.TU.ToOpen
                     dpt,  # ZDV

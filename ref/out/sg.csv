@@ -1,0 +1,301 @@
+id	name	dsc	disable	iec_asdu	iec_ca	iec_ioa	iec_cot	threshold	conv
+1	sdku:A_KP_1_ZDV_1.Pin	КП 1 Задв.1 Давление на входе	36
+2	sdku:A_KP_1_ZDV_1.Pout	КП 1 Задв.1 Давление на выходе	36
+3	sdku:A_KP_1_ZDV_1.ToOpen	КП 1 Задв.1 Открыть	45
+4	sdku:A_KP_1_ZDV_1.ToClose	КП 1 Задв.1 Закрыть	45
+5	sdku:A_KP_1_ZDV_1.Opened	КП 1 Задв.1 Открыта	30
+6	sdku:A_KP_1_ZDV_1.Closed	КП 1 Задв.1 Закрыта	30
+7	sdku:A_KP_1_ZDV_1.SetTimeOpen	КП 1 Задв.1 Уставка на открытие	50
+8	sdku:A_KP_1_ZDV_1.SetTimeClose	КП 1 Задв.1 Уставка на закрытие	50
+9	sdku:A_KP_1_ZDV_1.AlmMuf	КП 1 Задв.1 Авария муфты	30
+10	sdku:A_KP_1_ZDV_1.AlmU	КП 1 Задв.1 Авария питания	30
+11	sdku:A_KP_1_ZDV_2.Pin	КП 1 Задв.2 Давление на входе	36
+12	sdku:A_KP_1_ZDV_2.Pout	КП 1 Задв.2 Давление на выходе	36
+13	sdku:A_KP_1_ZDV_2.ToOpen	КП 1 Задв.2 Открыть	45
+14	sdku:A_KP_1_ZDV_2.ToClose	КП 1 Задв.2 Закрыть	45
+15	sdku:A_KP_1_ZDV_2.Opened	КП 1 Задв.2 Открыта	30
+16	sdku:A_KP_1_ZDV_2.Closed	КП 1 Задв.2 Закрыта	30
+17	sdku:A_KP_1_ZDV_2.SetTimeOpen	КП 1 Задв.2 Уставка на открытие	50
+18	sdku:A_KP_1_ZDV_2.SetTimeClose	КП 1 Задв.2 Уставка на закрытие	50
+19	sdku:A_KP_1_ZDV_2.AlmMuf	КП 1 Задв.2 Авария муфты	30
+20	sdku:A_KP_1_ZDV_2.AlmU	КП 1 Задв.2 Авария питания	30
+21	sdku:A_KP_1_ZDV_3.Pin	КП 1 Задв.3 Давление на входе	36
+22	sdku:A_KP_1_ZDV_3.Pout	КП 1 Задв.3 Давление на выходе	36
+23	sdku:A_KP_1_ZDV_3.ToOpen	КП 1 Задв.3 Открыть	45
+24	sdku:A_KP_1_ZDV_3.ToClose	КП 1 Задв.3 Закрыть	45
+25	sdku:A_KP_1_ZDV_3.Opened	КП 1 Задв.3 Открыта	30
+26	sdku:A_KP_1_ZDV_3.Closed	КП 1 Задв.3 Закрыта	30
+27	sdku:A_KP_1_ZDV_3.SetTimeOpen	КП 1 Задв.3 Уставка на открытие	50
+28	sdku:A_KP_1_ZDV_3.SetTimeClose	КП 1 Задв.3 Уставка на закрытие	50
+29	sdku:A_KP_1_ZDV_3.AlmMuf	КП 1 Задв.3 Авария муфты	30
+30	sdku:A_KP_1_ZDV_3.AlmU	КП 1 Задв.3 Авария питания	30
+31	sdku:A_KP_1_ZDV_4.Pin	КП 1 Задв.4 Давление на входе	36
+32	sdku:A_KP_1_ZDV_4.Pout	КП 1 Задв.4 Давление на выходе	36
+33	sdku:A_KP_1_ZDV_4.ToOpen	КП 1 Задв.4 Открыть	45
+34	sdku:A_KP_1_ZDV_4.ToClose	КП 1 Задв.4 Закрыть	45
+35	sdku:A_KP_1_ZDV_4.Opened	КП 1 Задв.4 Открыта	30
+36	sdku:A_KP_1_ZDV_4.Closed	КП 1 Задв.4 Закрыта	30
+37	sdku:A_KP_1_ZDV_4.SetTimeOpen	КП 1 Задв.4 Уставка на открытие	50
+38	sdku:A_KP_1_ZDV_4.SetTimeClose	КП 1 Задв.4 Уставка на закрытие	50
+39	sdku:A_KP_1_ZDV_4.AlmMuf	КП 1 Задв.4 Авария муфты	30
+40	sdku:A_KP_1_ZDV_4.AlmU	КП 1 Задв.4 Авария питания	30
+41	sdku:A_KP_1_ZDV_5.Pin	КП 1 Задв.5 Давление на входе	36
+42	sdku:A_KP_1_ZDV_5.Pout	КП 1 Задв.5 Давление на выходе	36
+43	sdku:A_KP_1_ZDV_5.ToOpen	КП 1 Задв.5 Открыть	45
+44	sdku:A_KP_1_ZDV_5.ToClose	КП 1 Задв.5 Закрыть	45
+45	sdku:A_KP_1_ZDV_5.Opened	КП 1 Задв.5 Открыта	30
+46	sdku:A_KP_1_ZDV_5.Closed	КП 1 Задв.5 Закрыта	30
+47	sdku:A_KP_1_ZDV_5.SetTimeOpen	КП 1 Задв.5 Уставка на открытие	50
+48	sdku:A_KP_1_ZDV_5.SetTimeClose	КП 1 Задв.5 Уставка на закрытие	50
+49	sdku:A_KP_1_ZDV_5.AlmMuf	КП 1 Задв.5 Авария муфты	30
+50	sdku:A_KP_1_ZDV_5.AlmU	КП 1 Задв.5 Авария питания	30
+51	sdku:A_KP_1_ZDV_6.Pin	КП 1 Задв.6 Давление на входе	36
+52	sdku:A_KP_1_ZDV_6.Pout	КП 1 Задв.6 Давление на выходе	36
+53	sdku:A_KP_1_ZDV_6.ToOpen	КП 1 Задв.6 Открыть	45
+54	sdku:A_KP_1_ZDV_6.ToClose	КП 1 Задв.6 Закрыть	45
+55	sdku:A_KP_1_ZDV_6.Opened	КП 1 Задв.6 Открыта	30
+56	sdku:A_KP_1_ZDV_6.Closed	КП 1 Задв.6 Закрыта	30
+57	sdku:A_KP_1_ZDV_6.SetTimeOpen	КП 1 Задв.6 Уставка на открытие	50
+58	sdku:A_KP_1_ZDV_6.SetTimeClose	КП 1 Задв.6 Уставка на закрытие	50
+59	sdku:A_KP_1_ZDV_6.AlmMuf	КП 1 Задв.6 Авария муфты	30
+60	sdku:A_KP_1_ZDV_6.AlmU	КП 1 Задв.6 Авария питания	30
+61	sdku:A_KP_1_ZDV_7.Pin	КП 1 Задв.7 Давление на входе	36
+62	sdku:A_KP_1_ZDV_7.Pout	КП 1 Задв.7 Давление на выходе	36
+63	sdku:A_KP_1_ZDV_7.ToOpen	КП 1 Задв.7 Открыть	45
+64	sdku:A_KP_1_ZDV_7.ToClose	КП 1 Задв.7 Закрыть	45
+65	sdku:A_KP_1_ZDV_7.Opened	КП 1 Задв.7 Открыта	30
+66	sdku:A_KP_1_ZDV_7.Closed	КП 1 Задв.7 Закрыта	30
+67	sdku:A_KP_1_ZDV_7.SetTimeOpen	КП 1 Задв.7 Уставка на открытие	50
+68	sdku:A_KP_1_ZDV_7.SetTimeClose	КП 1 Задв.7 Уставка на закрытие	50
+69	sdku:A_KP_1_ZDV_7.AlmMuf	КП 1 Задв.7 Авария муфты	30
+70	sdku:A_KP_1_ZDV_7.AlmU	КП 1 Задв.7 Авария питания	30
+71	sdku:A_KP_1_ZDV_8.Pin	КП 1 Задв.8 Давление на входе	36
+72	sdku:A_KP_1_ZDV_8.Pout	КП 1 Задв.8 Давление на выходе	36
+73	sdku:A_KP_1_ZDV_8.ToOpen	КП 1 Задв.8 Открыть	45
+74	sdku:A_KP_1_ZDV_8.ToClose	КП 1 Задв.8 Закрыть	45
+75	sdku:A_KP_1_ZDV_8.Opened	КП 1 Задв.8 Открыта	30
+76	sdku:A_KP_1_ZDV_8.Closed	КП 1 Задв.8 Закрыта	30
+77	sdku:A_KP_1_ZDV_8.SetTimeOpen	КП 1 Задв.8 Уставка на открытие	50
+78	sdku:A_KP_1_ZDV_8.SetTimeClose	КП 1 Задв.8 Уставка на закрытие	50
+79	sdku:A_KP_1_ZDV_8.AlmMuf	КП 1 Задв.8 Авария муфты	30
+80	sdku:A_KP_1_ZDV_8.AlmU	КП 1 Задв.8 Авария питания	30
+81	sdku:A_KP_1_ZDV_9.Pin	КП 1 Задв.9 Давление на входе	36
+82	sdku:A_KP_1_ZDV_9.Pout	КП 1 Задв.9 Давление на выходе	36
+83	sdku:A_KP_1_ZDV_9.ToOpen	КП 1 Задв.9 Открыть	45
+84	sdku:A_KP_1_ZDV_9.ToClose	КП 1 Задв.9 Закрыть	45
+85	sdku:A_KP_1_ZDV_9.Opened	КП 1 Задв.9 Открыта	30
+86	sdku:A_KP_1_ZDV_9.Closed	КП 1 Задв.9 Закрыта	30
+87	sdku:A_KP_1_ZDV_9.SetTimeOpen	КП 1 Задв.9 Уставка на открытие	50
+88	sdku:A_KP_1_ZDV_9.SetTimeClose	КП 1 Задв.9 Уставка на закрытие	50
+89	sdku:A_KP_1_ZDV_9.AlmMuf	КП 1 Задв.9 Авария муфты	30
+90	sdku:A_KP_1_ZDV_9.AlmU	КП 1 Задв.9 Авария питания	30
+91	sdku:A_KP_1_ZDV_10.Pin	КП 1 Задв.10 Давление на входе	36
+92	sdku:A_KP_1_ZDV_10.Pout	КП 1 Задв.10 Давление на выходе	36
+93	sdku:A_KP_1_ZDV_10.ToOpen	КП 1 Задв.10 Открыть	45
+94	sdku:A_KP_1_ZDV_10.ToClose	КП 1 Задв.10 Закрыть	45
+95	sdku:A_KP_1_ZDV_10.Opened	КП 1 Задв.10 Открыта	30
+96	sdku:A_KP_1_ZDV_10.Closed	КП 1 Задв.10 Закрыта	30
+97	sdku:A_KP_1_ZDV_10.SetTimeOpen	КП 1 Задв.10 Уставка на открытие	50
+98	sdku:A_KP_1_ZDV_10.SetTimeClose	КП 1 Задв.10 Уставка на закрытие	50
+99	sdku:A_KP_1_ZDV_10.AlmMuf	КП 1 Задв.10 Авария муфты	30
+100	sdku:A_KP_1_ZDV_10.AlmU	КП 1 Задв.10 Авария питания	30
+101	sdku:A_KP_2_ZDV_1.Pin	КП 2 Задв.1 Давление на входе	36
+102	sdku:A_KP_2_ZDV_1.Pout	КП 2 Задв.1 Давление на выходе	36
+103	sdku:A_KP_2_ZDV_1.ToOpen	КП 2 Задв.1 Открыть	45
+104	sdku:A_KP_2_ZDV_1.ToClose	КП 2 Задв.1 Закрыть	45
+105	sdku:A_KP_2_ZDV_1.Opened	КП 2 Задв.1 Открыта	30
+106	sdku:A_KP_2_ZDV_1.Closed	КП 2 Задв.1 Закрыта	30
+107	sdku:A_KP_2_ZDV_1.SetTimeOpen	КП 2 Задв.1 Уставка на открытие	50
+108	sdku:A_KP_2_ZDV_1.SetTimeClose	КП 2 Задв.1 Уставка на закрытие	50
+109	sdku:A_KP_2_ZDV_1.AlmMuf	КП 2 Задв.1 Авария муфты	30
+110	sdku:A_KP_2_ZDV_1.AlmU	КП 2 Задв.1 Авария питания	30
+111	sdku:A_KP_2_ZDV_2.Pin	КП 2 Задв.2 Давление на входе	36
+112	sdku:A_KP_2_ZDV_2.Pout	КП 2 Задв.2 Давление на выходе	36
+113	sdku:A_KP_2_ZDV_2.ToOpen	КП 2 Задв.2 Открыть	45
+114	sdku:A_KP_2_ZDV_2.ToClose	КП 2 Задв.2 Закрыть	45
+115	sdku:A_KP_2_ZDV_2.Opened	КП 2 Задв.2 Открыта	30
+116	sdku:A_KP_2_ZDV_2.Closed	КП 2 Задв.2 Закрыта	30
+117	sdku:A_KP_2_ZDV_2.SetTimeOpen	КП 2 Задв.2 Уставка на открытие	50
+118	sdku:A_KP_2_ZDV_2.SetTimeClose	КП 2 Задв.2 Уставка на закрытие	50
+119	sdku:A_KP_2_ZDV_2.AlmMuf	КП 2 Задв.2 Авария муфты	30
+120	sdku:A_KP_2_ZDV_2.AlmU	КП 2 Задв.2 Авария питания	30
+121	sdku:A_KP_2_ZDV_3.Pin	КП 2 Задв.3 Давление на входе	36
+122	sdku:A_KP_2_ZDV_3.Pout	КП 2 Задв.3 Давление на выходе	36
+123	sdku:A_KP_2_ZDV_3.ToOpen	КП 2 Задв.3 Открыть	45
+124	sdku:A_KP_2_ZDV_3.ToClose	КП 2 Задв.3 Закрыть	45
+125	sdku:A_KP_2_ZDV_3.Opened	КП 2 Задв.3 Открыта	30
+126	sdku:A_KP_2_ZDV_3.Closed	КП 2 Задв.3 Закрыта	30
+127	sdku:A_KP_2_ZDV_3.SetTimeOpen	КП 2 Задв.3 Уставка на открытие	50
+128	sdku:A_KP_2_ZDV_3.SetTimeClose	КП 2 Задв.3 Уставка на закрытие	50
+129	sdku:A_KP_2_ZDV_3.AlmMuf	КП 2 Задв.3 Авария муфты	30
+130	sdku:A_KP_2_ZDV_3.AlmU	КП 2 Задв.3 Авария питания	30
+131	sdku:A_KP_2_ZDV_4.Pin	КП 2 Задв.4 Давление на входе	36
+132	sdku:A_KP_2_ZDV_4.Pout	КП 2 Задв.4 Давление на выходе	36
+133	sdku:A_KP_2_ZDV_4.ToOpen	КП 2 Задв.4 Открыть	45
+134	sdku:A_KP_2_ZDV_4.ToClose	КП 2 Задв.4 Закрыть	45
+135	sdku:A_KP_2_ZDV_4.Opened	КП 2 Задв.4 Открыта	30
+136	sdku:A_KP_2_ZDV_4.Closed	КП 2 Задв.4 Закрыта	30
+137	sdku:A_KP_2_ZDV_4.SetTimeOpen	КП 2 Задв.4 Уставка на открытие	50
+138	sdku:A_KP_2_ZDV_4.SetTimeClose	КП 2 Задв.4 Уставка на закрытие	50
+139	sdku:A_KP_2_ZDV_4.AlmMuf	КП 2 Задв.4 Авария муфты	30
+140	sdku:A_KP_2_ZDV_4.AlmU	КП 2 Задв.4 Авария питания	30
+141	sdku:A_KP_2_ZDV_5.Pin	КП 2 Задв.5 Давление на входе	36
+142	sdku:A_KP_2_ZDV_5.Pout	КП 2 Задв.5 Давление на выходе	36
+143	sdku:A_KP_2_ZDV_5.ToOpen	КП 2 Задв.5 Открыть	45
+144	sdku:A_KP_2_ZDV_5.ToClose	КП 2 Задв.5 Закрыть	45
+145	sdku:A_KP_2_ZDV_5.Opened	КП 2 Задв.5 Открыта	30
+146	sdku:A_KP_2_ZDV_5.Closed	КП 2 Задв.5 Закрыта	30
+147	sdku:A_KP_2_ZDV_5.SetTimeOpen	КП 2 Задв.5 Уставка на открытие	50
+148	sdku:A_KP_2_ZDV_5.SetTimeClose	КП 2 Задв.5 Уставка на закрытие	50
+149	sdku:A_KP_2_ZDV_5.AlmMuf	КП 2 Задв.5 Авария муфты	30
+150	sdku:A_KP_2_ZDV_5.AlmU	КП 2 Задв.5 Авария питания	30
+151	sdku:A_KP_2_ZDV_6.Pin	КП 2 Задв.6 Давление на входе	36
+152	sdku:A_KP_2_ZDV_6.Pout	КП 2 Задв.6 Давление на выходе	36
+153	sdku:A_KP_2_ZDV_6.ToOpen	КП 2 Задв.6 Открыть	45
+154	sdku:A_KP_2_ZDV_6.ToClose	КП 2 Задв.6 Закрыть	45
+155	sdku:A_KP_2_ZDV_6.Opened	КП 2 Задв.6 Открыта	30
+156	sdku:A_KP_2_ZDV_6.Closed	КП 2 Задв.6 Закрыта	30
+157	sdku:A_KP_2_ZDV_6.SetTimeOpen	КП 2 Задв.6 Уставка на открытие	50
+158	sdku:A_KP_2_ZDV_6.SetTimeClose	КП 2 Задв.6 Уставка на закрытие	50
+159	sdku:A_KP_2_ZDV_6.AlmMuf	КП 2 Задв.6 Авария муфты	30
+160	sdku:A_KP_2_ZDV_6.AlmU	КП 2 Задв.6 Авария питания	30
+161	sdku:A_KP_2_ZDV_7.Pin	КП 2 Задв.7 Давление на входе	36
+162	sdku:A_KP_2_ZDV_7.Pout	КП 2 Задв.7 Давление на выходе	36
+163	sdku:A_KP_2_ZDV_7.ToOpen	КП 2 Задв.7 Открыть	45
+164	sdku:A_KP_2_ZDV_7.ToClose	КП 2 Задв.7 Закрыть	45
+165	sdku:A_KP_2_ZDV_7.Opened	КП 2 Задв.7 Открыта	30
+166	sdku:A_KP_2_ZDV_7.Closed	КП 2 Задв.7 Закрыта	30
+167	sdku:A_KP_2_ZDV_7.SetTimeOpen	КП 2 Задв.7 Уставка на открытие	50
+168	sdku:A_KP_2_ZDV_7.SetTimeClose	КП 2 Задв.7 Уставка на закрытие	50
+169	sdku:A_KP_2_ZDV_7.AlmMuf	КП 2 Задв.7 Авария муфты	30
+170	sdku:A_KP_2_ZDV_7.AlmU	КП 2 Задв.7 Авария питания	30
+171	sdku:A_KP_2_ZDV_8.Pin	КП 2 Задв.8 Давление на входе	36
+172	sdku:A_KP_2_ZDV_8.Pout	КП 2 Задв.8 Давление на выходе	36
+173	sdku:A_KP_2_ZDV_8.ToOpen	КП 2 Задв.8 Открыть	45
+174	sdku:A_KP_2_ZDV_8.ToClose	КП 2 Задв.8 Закрыть	45
+175	sdku:A_KP_2_ZDV_8.Opened	КП 2 Задв.8 Открыта	30
+176	sdku:A_KP_2_ZDV_8.Closed	КП 2 Задв.8 Закрыта	30
+177	sdku:A_KP_2_ZDV_8.SetTimeOpen	КП 2 Задв.8 Уставка на открытие	50
+178	sdku:A_KP_2_ZDV_8.SetTimeClose	КП 2 Задв.8 Уставка на закрытие	50
+179	sdku:A_KP_2_ZDV_8.AlmMuf	КП 2 Задв.8 Авария муфты	30
+180	sdku:A_KP_2_ZDV_8.AlmU	КП 2 Задв.8 Авария питания	30
+181	sdku:A_KP_2_ZDV_9.Pin	КП 2 Задв.9 Давление на входе	36
+182	sdku:A_KP_2_ZDV_9.Pout	КП 2 Задв.9 Давление на выходе	36
+183	sdku:A_KP_2_ZDV_9.ToOpen	КП 2 Задв.9 Открыть	45
+184	sdku:A_KP_2_ZDV_9.ToClose	КП 2 Задв.9 Закрыть	45
+185	sdku:A_KP_2_ZDV_9.Opened	КП 2 Задв.9 Открыта	30
+186	sdku:A_KP_2_ZDV_9.Closed	КП 2 Задв.9 Закрыта	30
+187	sdku:A_KP_2_ZDV_9.SetTimeOpen	КП 2 Задв.9 Уставка на открытие	50
+188	sdku:A_KP_2_ZDV_9.SetTimeClose	КП 2 Задв.9 Уставка на закрытие	50
+189	sdku:A_KP_2_ZDV_9.AlmMuf	КП 2 Задв.9 Авария муфты	30
+190	sdku:A_KP_2_ZDV_9.AlmU	КП 2 Задв.9 Авария питания	30
+191	sdku:A_KP_2_ZDV_10.Pin	КП 2 Задв.10 Давление на входе	36
+192	sdku:A_KP_2_ZDV_10.Pout	КП 2 Задв.10 Давление на выходе	36
+193	sdku:A_KP_2_ZDV_10.ToOpen	КП 2 Задв.10 Открыть	45
+194	sdku:A_KP_2_ZDV_10.ToClose	КП 2 Задв.10 Закрыть	45
+195	sdku:A_KP_2_ZDV_10.Opened	КП 2 Задв.10 Открыта	30
+196	sdku:A_KP_2_ZDV_10.Closed	КП 2 Задв.10 Закрыта	30
+197	sdku:A_KP_2_ZDV_10.SetTimeOpen	КП 2 Задв.10 Уставка на открытие	50
+198	sdku:A_KP_2_ZDV_10.SetTimeClose	КП 2 Задв.10 Уставка на закрытие	50
+199	sdku:A_KP_2_ZDV_10.AlmMuf	КП 2 Задв.10 Авария муфты	30
+200	sdku:A_KP_2_ZDV_10.AlmU	КП 2 Задв.10 Авария питания	30
+201	sdku:A_KP_3_ZDV_1.Pin	КП 3 Задв.1 Давление на входе	36
+202	sdku:A_KP_3_ZDV_1.Pout	КП 3 Задв.1 Давление на выходе	36
+203	sdku:A_KP_3_ZDV_1.ToOpen	КП 3 Задв.1 Открыть	45
+204	sdku:A_KP_3_ZDV_1.ToClose	КП 3 Задв.1 Закрыть	45
+205	sdku:A_KP_3_ZDV_1.Opened	КП 3 Задв.1 Открыта	30
+206	sdku:A_KP_3_ZDV_1.Closed	КП 3 Задв.1 Закрыта	30
+207	sdku:A_KP_3_ZDV_1.SetTimeOpen	КП 3 Задв.1 Уставка на открытие	50
+208	sdku:A_KP_3_ZDV_1.SetTimeClose	КП 3 Задв.1 Уставка на закрытие	50
+209	sdku:A_KP_3_ZDV_1.AlmMuf	КП 3 Задв.1 Авария муфты	30
+210	sdku:A_KP_3_ZDV_1.AlmU	КП 3 Задв.1 Авария питания	30
+211	sdku:A_KP_3_ZDV_2.Pin	КП 3 Задв.2 Давление на входе	36
+212	sdku:A_KP_3_ZDV_2.Pout	КП 3 Задв.2 Давление на выходе	36
+213	sdku:A_KP_3_ZDV_2.ToOpen	КП 3 Задв.2 Открыть	45
+214	sdku:A_KP_3_ZDV_2.ToClose	КП 3 Задв.2 Закрыть	45
+215	sdku:A_KP_3_ZDV_2.Opened	КП 3 Задв.2 Открыта	30
+216	sdku:A_KP_3_ZDV_2.Closed	КП 3 Задв.2 Закрыта	30
+217	sdku:A_KP_3_ZDV_2.SetTimeOpen	КП 3 Задв.2 Уставка на открытие	50
+218	sdku:A_KP_3_ZDV_2.SetTimeClose	КП 3 Задв.2 Уставка на закрытие	50
+219	sdku:A_KP_3_ZDV_2.AlmMuf	КП 3 Задв.2 Авария муфты	30
+220	sdku:A_KP_3_ZDV_2.AlmU	КП 3 Задв.2 Авария питания	30
+221	sdku:A_KP_3_ZDV_3.Pin	КП 3 Задв.3 Давление на входе	36
+222	sdku:A_KP_3_ZDV_3.Pout	КП 3 Задв.3 Давление на выходе	36
+223	sdku:A_KP_3_ZDV_3.ToOpen	КП 3 Задв.3 Открыть	45
+224	sdku:A_KP_3_ZDV_3.ToClose	КП 3 Задв.3 Закрыть	45
+225	sdku:A_KP_3_ZDV_3.Opened	КП 3 Задв.3 Открыта	30
+226	sdku:A_KP_3_ZDV_3.Closed	КП 3 Задв.3 Закрыта	30
+227	sdku:A_KP_3_ZDV_3.SetTimeOpen	КП 3 Задв.3 Уставка на открытие	50
+228	sdku:A_KP_3_ZDV_3.SetTimeClose	КП 3 Задв.3 Уставка на закрытие	50
+229	sdku:A_KP_3_ZDV_3.AlmMuf	КП 3 Задв.3 Авария муфты	30
+230	sdku:A_KP_3_ZDV_3.AlmU	КП 3 Задв.3 Авария питания	30
+231	sdku:A_KP_3_ZDV_4.Pin	КП 3 Задв.4 Давление на входе	36
+232	sdku:A_KP_3_ZDV_4.Pout	КП 3 Задв.4 Давление на выходе	36
+233	sdku:A_KP_3_ZDV_4.ToOpen	КП 3 Задв.4 Открыть	45
+234	sdku:A_KP_3_ZDV_4.ToClose	КП 3 Задв.4 Закрыть	45
+235	sdku:A_KP_3_ZDV_4.Opened	КП 3 Задв.4 Открыта	30
+236	sdku:A_KP_3_ZDV_4.Closed	КП 3 Задв.4 Закрыта	30
+237	sdku:A_KP_3_ZDV_4.SetTimeOpen	КП 3 Задв.4 Уставка на открытие	50
+238	sdku:A_KP_3_ZDV_4.SetTimeClose	КП 3 Задв.4 Уставка на закрытие	50
+239	sdku:A_KP_3_ZDV_4.AlmMuf	КП 3 Задв.4 Авария муфты	30
+240	sdku:A_KP_3_ZDV_4.AlmU	КП 3 Задв.4 Авария питания	30
+241	sdku:A_KP_3_ZDV_5.Pin	КП 3 Задв.5 Давление на входе	36
+242	sdku:A_KP_3_ZDV_5.Pout	КП 3 Задв.5 Давление на выходе	36
+243	sdku:A_KP_3_ZDV_5.ToOpen	КП 3 Задв.5 Открыть	45
+244	sdku:A_KP_3_ZDV_5.ToClose	КП 3 Задв.5 Закрыть	45
+245	sdku:A_KP_3_ZDV_5.Opened	КП 3 Задв.5 Открыта	30
+246	sdku:A_KP_3_ZDV_5.Closed	КП 3 Задв.5 Закрыта	30
+247	sdku:A_KP_3_ZDV_5.SetTimeOpen	КП 3 Задв.5 Уставка на открытие	50
+248	sdku:A_KP_3_ZDV_5.SetTimeClose	КП 3 Задв.5 Уставка на закрытие	50
+249	sdku:A_KP_3_ZDV_5.AlmMuf	КП 3 Задв.5 Авария муфты	30
+250	sdku:A_KP_3_ZDV_5.AlmU	КП 3 Задв.5 Авария питания	30
+251	sdku:A_KP_3_ZDV_6.Pin	КП 3 Задв.6 Давление на входе	36
+252	sdku:A_KP_3_ZDV_6.Pout	КП 3 Задв.6 Давление на выходе	36
+253	sdku:A_KP_3_ZDV_6.ToOpen	КП 3 Задв.6 Открыть	45
+254	sdku:A_KP_3_ZDV_6.ToClose	КП 3 Задв.6 Закрыть	45
+255	sdku:A_KP_3_ZDV_6.Opened	КП 3 Задв.6 Открыта	30
+256	sdku:A_KP_3_ZDV_6.Closed	КП 3 Задв.6 Закрыта	30
+257	sdku:A_KP_3_ZDV_6.SetTimeOpen	КП 3 Задв.6 Уставка на открытие	50
+258	sdku:A_KP_3_ZDV_6.SetTimeClose	КП 3 Задв.6 Уставка на закрытие	50
+259	sdku:A_KP_3_ZDV_6.AlmMuf	КП 3 Задв.6 Авария муфты	30
+260	sdku:A_KP_3_ZDV_6.AlmU	КП 3 Задв.6 Авария питания	30
+261	sdku:A_KP_3_ZDV_7.Pin	КП 3 Задв.7 Давление на входе	36
+262	sdku:A_KP_3_ZDV_7.Pout	КП 3 Задв.7 Давление на выходе	36
+263	sdku:A_KP_3_ZDV_7.ToOpen	КП 3 Задв.7 Открыть	45
+264	sdku:A_KP_3_ZDV_7.ToClose	КП 3 Задв.7 Закрыть	45
+265	sdku:A_KP_3_ZDV_7.Opened	КП 3 Задв.7 Открыта	30
+266	sdku:A_KP_3_ZDV_7.Closed	КП 3 Задв.7 Закрыта	30
+267	sdku:A_KP_3_ZDV_7.SetTimeOpen	КП 3 Задв.7 Уставка на открытие	50
+268	sdku:A_KP_3_ZDV_7.SetTimeClose	КП 3 Задв.7 Уставка на закрытие	50
+269	sdku:A_KP_3_ZDV_7.AlmMuf	КП 3 Задв.7 Авария муфты	30
+270	sdku:A_KP_3_ZDV_7.AlmU	КП 3 Задв.7 Авария питания	30
+271	sdku:A_KP_3_ZDV_8.Pin	КП 3 Задв.8 Давление на входе	36
+272	sdku:A_KP_3_ZDV_8.Pout	КП 3 Задв.8 Давление на выходе	36
+273	sdku:A_KP_3_ZDV_8.ToOpen	КП 3 Задв.8 Открыть	45
+274	sdku:A_KP_3_ZDV_8.ToClose	КП 3 Задв.8 Закрыть	45
+275	sdku:A_KP_3_ZDV_8.Opened	КП 3 Задв.8 Открыта	30
+276	sdku:A_KP_3_ZDV_8.Closed	КП 3 Задв.8 Закрыта	30
+277	sdku:A_KP_3_ZDV_8.SetTimeOpen	КП 3 Задв.8 Уставка на открытие	50
+278	sdku:A_KP_3_ZDV_8.SetTimeClose	КП 3 Задв.8 Уставка на закрытие	50
+279	sdku:A_KP_3_ZDV_8.AlmMuf	КП 3 Задв.8 Авария муфты	30
+280	sdku:A_KP_3_ZDV_8.AlmU	КП 3 Задв.8 Авария питания	30
+281	sdku:A_KP_3_ZDV_9.Pin	КП 3 Задв.9 Давление на входе	36
+282	sdku:A_KP_3_ZDV_9.Pout	КП 3 Задв.9 Давление на выходе	36
+283	sdku:A_KP_3_ZDV_9.ToOpen	КП 3 Задв.9 Открыть	45
+284	sdku:A_KP_3_ZDV_9.ToClose	КП 3 Задв.9 Закрыть	45
+285	sdku:A_KP_3_ZDV_9.Opened	КП 3 Задв.9 Открыта	30
+286	sdku:A_KP_3_ZDV_9.Closed	КП 3 Задв.9 Закрыта	30
+287	sdku:A_KP_3_ZDV_9.SetTimeOpen	КП 3 Задв.9 Уставка на открытие	50
+288	sdku:A_KP_3_ZDV_9.SetTimeClose	КП 3 Задв.9 Уставка на закрытие	50
+289	sdku:A_KP_3_ZDV_9.AlmMuf	КП 3 Задв.9 Авария муфты	30
+290	sdku:A_KP_3_ZDV_9.AlmU	КП 3 Задв.9 Авария питания	30
+291	sdku:A_KP_3_ZDV_10.Pin	КП 3 Задв.10 Давление на входе	36
+292	sdku:A_KP_3_ZDV_10.Pout	КП 3 Задв.10 Давление на выходе	36
+293	sdku:A_KP_3_ZDV_10.ToOpen	КП 3 Задв.10 Открыть	45
+294	sdku:A_KP_3_ZDV_10.ToClose	КП 3 Задв.10 Закрыть	45
+295	sdku:A_KP_3_ZDV_10.Opened	КП 3 Задв.10 Открыта	30
+296	sdku:A_KP_3_ZDV_10.Closed	КП 3 Задв.10 Закрыта	30
+297	sdku:A_KP_3_ZDV_10.SetTimeOpen	КП 3 Задв.10 Уставка на открытие	50
+298	sdku:A_KP_3_ZDV_10.SetTimeClose	КП 3 Задв.10 Уставка на закрытие	50
+299	sdku:A_KP_3_ZDV_10.AlmMuf	КП 3 Задв.10 Авария муфты	30
+300	sdku:A_KP_3_ZDV_10.AlmU	КП 3 Задв.10 Авария питания	30

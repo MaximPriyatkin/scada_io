@@ -1,38 +1,25 @@
 db: cis.db
+# Если используется несколько автоматизированных систем, объединенных 
+# шлюзом обмена данными, создаются несколько схем в базе данных, которые
+# объединяются роутером для получения данных из разных топиков
+# имя системы в модель не входит, т.к. является внешним признаком.
+# Порядок создания таблиц
 create:
   order:
     sys: 1
-    sg: 1
     dpt: 1
     grp: 1
     dpe: 1
     dp: 1
+    sg: 1
     sg_rel: 1
-    alarm_lim_type: 1
-    alarm: 1
+    alm_lim_type: 1
+    alm: 1
     iec_addr: 1
     vl_cur: 0
     vl: 0
-    sys_trg_ins: 1
-    sys_trg_upd: 1
-    sg_trg_ins: 1
-    sg_trg_upd: 1
-    dpt_trg_ins: 1
-    dpt_trg_upd: 1
-    grp_trg_ins: 1
-    grp_trg_upd: 1
-    dpe_trg_ins: 1
-    dpe_trg_upd: 1
-    dp_trg_ins: 1
-    dp_trg_upd: 1
-    sg_rel_trg_ins: 1
-    sg_rel_trg_upd: 1
-    iec_addr_trg_ins: 1
-    iec_addr_trg_upd: 1
-    alarm_trg_ins: 1
-    alarm_trg_upd: 1
-
-  sys: >
+# Список систем для которых создаются типы объектов
+  sys: |
     CREATE TABLE IF NOT EXISTS sys (
       id INTEGER PRIMARY KEY,
       name TEXT UNIQUE NOT NULL,
@@ -41,16 +28,8 @@ create:
       created_at DATETIME,
       updated_at DATETIME
     );
-  sg: >
-    CREATE TABLE IF NOT EXISTS sg (
-      id INTEGER PRIMARY KEY,
-      name TEXT UNIQUE NOT NULL,
-      dsc TEXT,
-      disable INTEGER  DEFAULT 0,
-      created_at DATETIME,
-      updated_at DATETIME
-    );
-  dpt: >
+# Типы объектов
+  dpt: |
     CREATE TABLE IF NOT EXISTS dpt (
       id INTEGER PRIMARY KEY,
       name TEXT NOT NULL,
@@ -62,20 +41,8 @@ create:
       UNIQUE (name, sys),
       FOREIGN KEY (sys) REFERENCES sys(id) ON DELETE CASCADE
     );
-  grp: >
-    CREATE TABLE IF NOT EXISTS grp (
-      id INTEGER PRIMARY KEY,
-      name TEXT UNIQUE NOT NULL,
-      dsc TEXT,
-      unit INTEGER,
-      fmt TEXT,
-      type INTEGER,
-      parent INTEGER,
-      created_at DATETIME,
-      updated_at DATETIME,
-      FOREIGN KEY (parent) REFERENCES grp(id)
-    );
-  dpe: >
+# Типы сигналов в типе объекта
+  dpe: |
     CREATE TABLE IF NOT EXISTS dpe (
       id INTEGER PRIMARY KEY,
       name TEXT NOT NULL,
@@ -89,244 +56,157 @@ create:
       FOREIGN KEY (dpt) REFERENCES dpt(id) ON DELETE CASCADE,
       FOREIGN KEY (grp) REFERENCES grp(id) ON UPDATE CASCADE
     );
-  dp: >
+# Группы для типов сигналов
+  grp: |
+    CREATE TABLE IF NOT EXISTS grp (
+      id INTEGER PRIMARY KEY,
+      name TEXT UNIQUE NOT NULL,
+      dsc TEXT,
+      unit INTEGER,
+      fmt TEXT,
+      type INTEGER,
+      parent INTEGER,
+      created_at DATETIME,
+      updated_at DATETIME,
+      FOREIGN KEY (parent) REFERENCES grp(id)
+    );
+# Технологические объекты
+  dp: |
     CREATE TABLE IF NOT EXISTS dp (
       id INTEGER PRIMARY KEY,
       name TEXT UNIQUE NOT NULL,
       dsc TEXT,
-      topic INTEGER,
       dpt INTEGER NOT NULL,
       disable INTEGER  DEFAULT 0,
       created_at DATETIME,
       updated_at DATETIME,
       FOREIGN KEY (dpt) REFERENCES dpt(id) ON DELETE CASCADE
     );
-  sg_rel: >
-    CREATE TABLE IF NOT EXISTS sg_rel (
+# Сигналы, как сочетание объекта и типа сигнала
+# Уникальность сигнала определяется сочетанием идентификатора объекта
+# и типа сигнала. Номер сигнала можно отнести к разным сочетаниям
+# поэтому можно один и тот же сигнал использовать в разных системах,
+# т.к. сигнал передается с этим номером. Id нужен для связей с другими 
+# таблицами. Алармы формируются по id, если alarm общий для двух систем,
+# можно найти id по всем sg равным требуемому, если раздельный, то найти только свой.
+# Свойства сигнала (тип, архивация, хранение в оперативной базе определяется в отдельной 
+# таблице, аналогичной адресу или берется из типа одной из моделей (что удобнее, т.к.
+# это унифицированно)
+  sg: |
+    CREATE TABLE IF NOT EXISTS sg (
       id INTEGER PRIMARY KEY,
-      sg INTEGER NOT NULL,
-      dp INTEGER NOT NULL,
-      dpe INTEGER NOT NULL,
+      link_sg INTEGER,
+      dp INTEGER,
+      dpe INTEGER,
+      name TEXT,
+      dsc TEXT,
       disable INTEGER  DEFAULT 0,
       created_at DATETIME,
       updated_at DATETIME,
       UNIQUE(dp, dpe),
-      FOREIGN KEY (sg) REFERENCES sg(id) ON DELETE CASCADE,
-      FOREIGN KEY (dp) REFERENCES dp(id) ON DELETE CASCADE,
-      FOREIGN KEY (dpe) REFERENCES dpe(id) ON DELETE CASCADE
+      FOREIGN KEY (dp) REFERENCES dp(id) ON DELETE SET NULL,
+      FOREIGN KEY (dpe) REFERENCES dpe(id) ON DELETE SET NULL,
+      FOREIGN KEY (link_sg) REFERENCES sg(id) ON DELETE SET NULL
     );
-  alarm_lim_type: >
-    CREATE TABLE IF NOT EXISTS alarm_lim_type (
+# Таблица связей сигналов в дерево для поиска
+# может использоваться для добавления сигналов из списков без типизации
+# например, из КП ИО
+  sg_rel: |
+    CREATE TABLE IF NOT EXISTS sg_rel (
       id INTEGER PRIMARY KEY,
-      name TEXT UNIQUE NOT NULL,
-      dsc TEXT
+      source INTEGER NOT NULL,
+      target INTEGER NOT NULL,
+      name TEXT,
+      disable INTEGER,
+      created_at DATETIME,
+      updated_at DATETIME,
+      UNIQUE(source, target),
+      FOREIGN KEY (source) REFERENCES sg(id) ON DELETE CASCADE,
+      FOREIGN KEY (target) REFERENCES sg(id) ON DELETE CASCADE
     );
-  alarm: >
-    CREATE TABLE IF NOT EXISTS alarm (
+# Таблица для генерации алармов
+  alm: |
+    CREATE TABLE IF NOT EXISTS alm (
+      id INTEGER PRIMARY KEY,
       sg INTEGER NOT NULL,
-      id_limit INTEGER NOT NULL,
-      type INTEGER NOT NULL,
+      id_lim INTEGER NOT NULL,
+      lim_type INTEGER NOT NULL,
       val REAL,
-      txt TEXT,
-      dead_h REAL,
-      dead_l REAL,
-      priority INTEGER,
+      msg TEXT,
+      hyst_h REAL,
+      hyst_l REAL,
+      severity INTEGER,
       disable INTEGER  DEFAULT 0,
       created_at DATETIME,
       updated_at DATETIME,
-      PRIMARY KEY (sg, id_limit),
+      UNIQUE (sg, id_lim),
       FOREIGN KEY (sg) REFERENCES sg(id) ON DELETE CASCADE,
-      FOREIGN KEY (type) REFERENCES alarm_lim_type(id)
+      FOREIGN KEY (lim_type) REFERENCES alm_lim_type(id)
     );
+# Таблица возможных названий диапазонов алармов    
+  alm_lim_type: >
+    CREATE TABLE IF NOT EXISTS alm_lim_type (
+      id INTEGER PRIMARY KEY,
+      name TEXT UNIQUE NOT NULL,
+      dsc TEXT,
+      created_at DATETIME,
+      updated_at DATETIME      
+    );
+# Таблица адресов сигналов ГОСТ Р МЭК 60870-5-104
+# направление определяется asdu и драйвером (кроме cot)
   iec_addr: >
     CREATE TABLE IF NOT EXISTS iec_addr (
-      id INTEGER PRIMARY KEY,
+      id INTEGER PRIMARY KEY,  -- связь 1:1
       asdu INTEGER,
       ca INTEGER,
       ioa INTEGER,
-      cot INTEGER,
-      th REAL,
-      conv TEXT,
+      is_cot INTEGER CHECK (is_cot is NULL OR is_cot = 1),
+      th REAL,    -- threshold, порог отклонения для передачи (deadband)
+      conv TEXT,  -- кусочно-линейная функция: 4.2|0|18.5|10 (4.2мА - 0, 20мА - 10)
       created_at DATETIME,
       updated_at DATETIME,
+      UNIQUE (asdu, ca, ioa),
       FOREIGN KEY (id) REFERENCES sg(id) ON DELETE CASCADE
     );
-  vl_cur: >
-    CREATE TABLE IF NOT EXISTS vl_cur (
-      sg INTEGER PRIMARY KEY,
-      vl REAL NOT NULL,
-      ts DOUBLE NOT NULL,
+# Текущие значения сигналов
+  val: >
+    CREATE TABLE IF NOT EXISTS val (
+      sg INTEGER PRIMARY KEY,       -- сигнал
+      ts INTEGER NOT NULL,          -- миллисекунды
+      seq INT DEFAULT NULL,         -- порядок, если пришло несколько сигналов с одинаковой меткой времени
+      val REAL NOT NULL,
       q INTEGER NOT NULL,
       FOREIGN KEY (sg) REFERENCES sg(id) ON DELETE CASCADE
     );
-  vl: >
-    CREATE TABLE IF NOT EXISTS vl (
+# История изменений значений сигналов
+# seq - порядок, если сигналы пришли с одной и той же меткой времени
+# ts - INTEGER с миллисекундами
+  val_hist: >
+    CREATE TABLE IF NOT EXISTS val_hist (
       sg INTEGER NOT NULL,
-      vl REAL NOT NULL,
-      ts DOUBLE NOT NULL,
+      ts INTEGER NOT NULL,
+      seq INT DEFAULT NULL,
+      val REAL NOT NULL,
       q INTEGER NOT NULL,
-      PRIMARY KEY (sg, ts),
-      FOREIGN KEY (sg) REFERENCES sg(id) ON DELETE CASCADE
+      PRIMARY KEY (sg, ts, seq),
+      FOREIGN KEY (sg) REFERENCES sg(id)  
     );
-  sys_trg_ins: >
-    CREATE TRIGGER IF NOT EXISTS sys_after_insert
-      AFTER INSERT ON sys
+# Общие триггеры для создания всех таблиц конфигурации
+  trg_ins: >
+    CREATE TRIGGER IF NOT EXISTS {tbl}_before_insert
+      AFTER INSERT ON {tbl}
       BEGIN
-          UPDATE sys
+          UPDATE {tbl}
           SET
               created_at = COALESCE(NEW.created_at, datetime('now')),
               updated_at = COALESCE(NEW.updated_at, datetime('now'))
           WHERE rowid = NEW.rowid;
       END;
-  sys_trg_upd: >
-    CREATE TRIGGER IF NOT EXISTS sys_after_update
-        AFTER UPDATE ON sys
+  trg_upd: >
+    CREATE TRIGGER IF NOT EXISTS {tbl}_after_update
+        AFTER UPDATE ON {tbl}
         BEGIN
-            UPDATE sys
-            SET updated_at = datetime('now')
-            WHERE rowid = NEW.rowid;
-        END;
-  sg_trg_ins: >
-    CREATE TRIGGER IF NOT EXISTS sg_after_insert
-      AFTER INSERT ON sg
-      BEGIN
-          UPDATE sg
-          SET
-              created_at = COALESCE(NEW.created_at, datetime('now')),
-              updated_at = COALESCE(NEW.updated_at, datetime('now'))
-          WHERE rowid = NEW.rowid;
-      END;
-  sg_trg_upd: >
-    CREATE TRIGGER IF NOT EXISTS sg_after_update
-        AFTER UPDATE ON sg
-        BEGIN
-            UPDATE sg
-            SET updated_at = datetime('now')
-            WHERE rowid = NEW.rowid;
-        END;
-  dpt_trg_ins: >
-    CREATE TRIGGER IF NOT EXISTS dpt_after_insert
-      AFTER INSERT ON dpt
-      BEGIN
-          UPDATE dpt
-          SET
-              created_at = COALESCE(NEW.created_at, datetime('now')),
-              updated_at = COALESCE(NEW.updated_at, datetime('now'))
-          WHERE rowid = NEW.rowid;
-      END;
-  dpt_trg_upd: >
-    CREATE TRIGGER IF NOT EXISTS dpt_after_update
-        AFTER UPDATE ON dpt
-        BEGIN
-            UPDATE dpt
-            SET updated_at = datetime('now')
-            WHERE rowid = NEW.rowid;
-        END;
-  grp_trg_ins: >
-    CREATE TRIGGER IF NOT EXISTS grp_after_insert
-      AFTER INSERT ON grp
-      BEGIN
-          UPDATE grp
-          SET
-              created_at = COALESCE(NEW.created_at, datetime('now')),
-              updated_at = COALESCE(NEW.updated_at, datetime('now'))
-          WHERE rowid = NEW.rowid;
-      END;
-  grp_trg_upd: >
-    CREATE TRIGGER IF NOT EXISTS grp_after_update
-        AFTER UPDATE ON grp
-        BEGIN
-            UPDATE grp
-            SET updated_at = datetime('now')
-            WHERE rowid = NEW.rowid;
-        END;
-  dpe_trg_ins: >
-    CREATE TRIGGER IF NOT EXISTS dpe_after_insert
-      AFTER INSERT ON dpe
-      BEGIN
-          UPDATE dpe
-          SET
-              created_at = COALESCE(NEW.created_at, datetime('now')),
-              updated_at = COALESCE(NEW.updated_at, datetime('now'))
-          WHERE rowid = NEW.rowid;
-      END;
-  dpe_trg_upd: >
-    CREATE TRIGGER IF NOT EXISTS dpe_after_update
-        AFTER UPDATE ON dpe
-        BEGIN
-            UPDATE dpe
-            SET updated_at = datetime('now')
-            WHERE rowid = NEW.rowid;
-        END;
-  dp_trg_ins: >
-    CREATE TRIGGER IF NOT EXISTS dp_after_insert
-      AFTER INSERT ON dp
-      BEGIN
-          UPDATE dp
-          SET
-              created_at = COALESCE(NEW.created_at, datetime('now')),
-              updated_at = COALESCE(NEW.updated_at, datetime('now'))
-          WHERE rowid = NEW.rowid;
-      END;
-  dp_trg_upd: >
-    CREATE TRIGGER IF NOT EXISTS dp_after_update
-        AFTER UPDATE ON dp
-        BEGIN
-            UPDATE dp
-            SET updated_at = datetime('now')
-            WHERE rowid = NEW.rowid;
-        END;
-  sg_rel_trg_ins: >
-    CREATE TRIGGER IF NOT EXISTS sg_rel_after_insert
-      AFTER INSERT ON sg_rel
-      BEGIN
-          UPDATE sg_rel
-          SET
-              created_at = COALESCE(NEW.created_at, datetime('now')),
-              updated_at = COALESCE(NEW.updated_at, datetime('now'))
-          WHERE rowid = NEW.rowid;
-      END;
-  sg_rel_trg_upd: >
-    CREATE TRIGGER IF NOT EXISTS sg_rel_after_update
-        AFTER UPDATE ON sg_rel
-        BEGIN
-            UPDATE sg_rel
-            SET updated_at = datetime('now')
-            WHERE rowid = NEW.rowid;
-        END;
-  iec_addr_trg_ins: >
-    CREATE TRIGGER IF NOT EXISTS iec_addr_after_insert
-      AFTER INSERT ON iec_addr
-      BEGIN
-          UPDATE iec_addr
-          SET
-              created_at = COALESCE(NEW.created_at, datetime('now')),
-              updated_at = COALESCE(NEW.updated_at, datetime('now'))
-          WHERE rowid = NEW.rowid;
-      END;
-  iec_addr_trg_upd: >
-    CREATE TRIGGER IF NOT EXISTS iec_addr_after_update
-        AFTER UPDATE ON iec_addr
-        BEGIN
-            UPDATE iec_addr
-            SET updated_at = datetime('now')
-            WHERE rowid = NEW.rowid;
-        END;
-  alarm_trg_ins: >
-    CREATE TRIGGER IF NOT EXISTS alarm_after_insert
-      AFTER INSERT ON alarm
-      BEGIN
-          UPDATE alarm
-          SET
-              created_at = COALESCE(NEW.created_at, datetime('now')),
-              updated_at = COALESCE(NEW.updated_at, datetime('now'))
-          WHERE rowid = NEW.rowid;
-      END;
-  alarm_trg_upd: >
-    CREATE TRIGGER IF NOT EXISTS alarm_after_update
-        AFTER UPDATE ON alarm
-        BEGIN
-            UPDATE alarm
+            UPDATE {tbl}
             SET updated_at = datetime('now')
             WHERE rowid = NEW.rowid;
         END;
@@ -426,20 +306,30 @@ upd:
         disable = excluded.disable;
   sg:
     sql: |
-      INSERT INTO sg (id, name, dsc, disable)
-      VALUES (:id, 
+      INSERT INTO sg (id, name, dsc)
+      VALUES (:id,
               :name,
-              :dsc,
-              :disable
-              )
+              :dsc)
       ON CONFLICT (id) DO UPDATE SET
         name = excluded.name,
-        dsc = excluded.dsc,
-        disable = excluded.disable;
-    fname: sg    
+        dsc = excluded.dsc;
+    fname: sg
+  sg_rel:
+    sql: |
+      UPDATE sg 
+      SET 
+          dp = (SELECT id FROM dp 
+          WHERE name = SUBSTR(sg.name, 
+            INSTR(sg.name, ':') + 1, 
+            INSTR(sg.name, '.') - INSTR(sg.name, ':') - 1)
+          ),
+          dpe = (SELECT id FROM dpe WHERE name = SUBSTR(sg.name, 
+            INSTR(sg.name, '.') + 1  )
+          )
+      WHERE INSTR(sg.name, ':') > 0 AND INSTR(sg.name, '.') > 0;
   iec_addr:
     sql: |
-      INSERT INTO iec_addr (id, asdu, ca, ioa, cot, th, conv)
+      INSERT INTO iec_addr (id, asdu, ca, ioa, is_cot, th, conv)
       VALUES (:id, 
               :iec_asdu,
               :iec_ca,
@@ -452,7 +342,7 @@ upd:
         asdu = excluded.asdu,
         ca = excluded.ca,
         ioa = excluded.ioa,
-        cot = excluded.cot,
+        is_cot = excluded.is_cot,
         th = excluded.th,
         conv = excluded.conv;
     fname: sg
@@ -460,18 +350,18 @@ exp:
   sys:
     fname: 'ref/out/sys.csv'
     cols: [id, name, dsc, disable]
-    sql: >
+    sql: |
       SELECT id, name, dsc, disable FROM sys;
   dpt:
     fname: 'ref/out/dpt.csv'
     cols: [id, sys, dpt, dsc, disable]
-    sql: >
+    sql: |
       SELECT dpt.id, sys.name, dpt.name, dpt.dsc, dpt.disable FROM dpt
       JOIN sys ON dpt.sys = sys.id;
   dpe:
     fname: 'ref/out/dpe.csv'
     cols: [id, sys, dpt, name, dsc, grp, disable]
-    sql: >
+    sql: |
       SELECT dpe.id, sys.name, dpt.name, dpe.name, dpe.dsc,
              dpe.grp, dpe.disable FROM dpe
       JOIN dpt ON dpe.dpt = dpt.id
@@ -479,24 +369,72 @@ exp:
   dp:
     fname: 'ref/out/dp.csv'
     cols: [id, sys, dpt, name, dsc, disable]
-    sql: >
+    sql: |
       SELECT dp.id, sys.name, dpt.name, dp.name, dp.dsc, dp.disable FROM dp
       JOIN dpt ON dp.dpt = dpt.id
       JOIN sys ON dpt.sys = sys.id;
   grp:
     fname: 'ref/out/grp.csv'
     cols: [id, parent, name, dsc, unit, fmt, type]
-    sql: >
+    sql: |
       SELECT c.id, p.name, c.name, c.dsc,
         c.unit, c.fmt, c.type
         FROM grp c
         LEFT JOIN grp p ON p.id = c.parent;
-  alarm:
-    fname: 'ref/out/alarm.csv'
-    cols: [sg, id_limit, type, val, txt, dead_h, dead_l, priority, disable]
-    sql: >
-      SELECT a.sg, a.id_limit, t.name, a.val, a.txt,
-             a.dead_h, a.dead_l, a.priority, a.disable
-        FROM alarm a
-        JOIN alarm_lim_type t ON a.type = t.id
-        ORDER BY a.sg, a.id_limit;
+  alm:
+    fname: 'ref/out/alm.csv'
+    cols: [sg, id_lim, alm_lim_type, val, msg, hyst_h, hyst_l, severity, disable]
+    sql: |
+      SELECT a.sg, a.id_lim, t.name, a.val, a.msg,
+             a.hyst_h, a.hyst_l, a.severity, a.disable
+        FROM alm a
+        JOIN alm_lim_type t ON a.lim_type = t.id
+        ORDER BY a.sg, a.id_lim;
+  sg:
+    fname: 'ref/out/sg.csv'
+    cols: ['id', 'name', 'dsc', 'disable', 'iec_asdu', 'iec_ca', 'iec_ioa', 'iec_cot', 'threshold', 'conv']
+    sql: |
+      SELECT
+      ROW_NUMBER() OVER (ORDER BY dp.id, dpe.id) as id,
+      sys.name || ":" || dp.name || '.' || dpe.name as name,
+      dp.dsc || ' ' || dpe.dsc as dsc,
+      grp.type as iec_asdu
+      FROM dp
+      JOIN dpe ON dpe.dpt = dp.dpt
+      JOIN dpt ON dpe.dpt = dpt.id
+      JOIN sys ON sys.id = dpt.sys
+      JOIN grp ON grp.id = dpe.grp
+exp_wcc:
+  dpt: |
+    SELECT dpt.name, dpe.name, grp.type FROM dpt
+    JOIN dpe ON dpe.dpt = dpt.id
+    JOIN grp ON dpe.grp = grp.id
+    ORDER BY dpt.name, dpe.name
+  dp: |
+    SELECT dp.name, dpt.name, 0 FROM dp
+    JOIN dpt ON dpt.id = dp.dpt 
+  distrib: |
+    SELECT 
+    ?, 
+    dp.name || "." || dpe.name,
+    dpt.name,
+    ? as type,
+    ? as drv 
+    FROM sg as sg
+    JOIN iec_addr ON sg.id = iec_addr.id
+    JOIN dp ON dp.id = sg.dp
+    JOIN dpe ON dpe.id = sg.dpe
+    JOIN dpt ON dpt.id = dp.dpt 
+  iec_addr: |
+    SELECT 
+    dp.name || "." || dpe.name,
+    dpt.name,
+    iec_addr.asdu,
+    iec_addr.ca,
+    iec_addr.ioa
+    FROM sg as sg
+    JOIN iec_addr ON sg.id = iec_addr.id
+    JOIN dp ON dp.id = sg.dp
+    JOIN dpe ON dpe.id = sg.dpe
+    JOIN dpt ON dpt.id = dp.dpt 
+  
