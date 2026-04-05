@@ -64,7 +64,7 @@ def read_db(tbl: str, log: logging.Logger) -> int:
             cursor = conn.cursor()
             cursor.execute(sql)
             row = cursor.fetchone()
-            with open(f'{FOLDER_OUT}{tbl}{FILE_EXT}', 'w', encoding=LANG_ENCODE) as f:
+            with open(f'{FOLDER_OUT}{tbl}{FILE_EXT}', 'w', encoding=LANG_ENCODE, newline='') as f:
                 writer = csv.writer(f, delimiter=CSV_DELIM, lineterminator=LINETERM)
                 writer.writerow(c.get_conf(f'exp.{tbl}.cols'))
                 cnt_row = 0
@@ -125,6 +125,10 @@ def upd_db(tbl: str, log: logging.Logger) -> int:
                 log.warning(f'Row {row_num}: {missing}, skipping')
                 skipped += 1
                 continue
+            nullable_fields = conf.get('nullable', []) 
+            for field in nullable_fields:
+                if field in row and row[field] == '':
+                    row[field] = None
             records.append(row)
     if not records:
         log.warning(f'No valid records in {tbl} (skipped: {skipped})')
@@ -336,7 +340,7 @@ def exp_winccoa(is_server: bool, log: logging.Logger):
     #    direct = '\5'
 
 def _write_dpl(fname: str, data:list, header:str) -> None:
-    out_file = f'{FOLDER_OUT}{fname}'
+    out_file = f'{FOLDER_OUT}/winccoa/{fname}'
     with open(out_file, 'w', encoding=LANG_ENCODE) as f:
         f.write(header)
         for row in data:

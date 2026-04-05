@@ -1,1 +1,1 @@
-sg	id_lim	alm_lim_type	val	msg	hyst_h	hyst_l	severity	disable
+id	sg	id_lim	alm_lim_type	val	msg	hyst_h	hyst_l	severity	disable

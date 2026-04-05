@@ -12,7 +12,8 @@ create:
     dpe: 1
     dp: 1
     sg: 1
-    sg_rel: 1
+    sg_link: 1
+    sg_tree: 1
     alm_lim_type: 1
     alm: 1
     iec_addr: 1
@@ -95,34 +96,48 @@ create:
   sg: |
     CREATE TABLE IF NOT EXISTS sg (
       id INTEGER PRIMARY KEY,
-      link_sg INTEGER,
       dp INTEGER,
       dpe INTEGER,
       name TEXT,
       dsc TEXT,
+      grp INTEGER,
       disable INTEGER  DEFAULT 0,
       created_at DATETIME,
       updated_at DATETIME,
       UNIQUE(dp, dpe),
       FOREIGN KEY (dp) REFERENCES dp(id) ON DELETE SET NULL,
       FOREIGN KEY (dpe) REFERENCES dpe(id) ON DELETE SET NULL,
-      FOREIGN KEY (link_sg) REFERENCES sg(id) ON DELETE SET NULL
+      FOREIGN KEY (grp) REFERENCES grp(id) ON UPDATE CASCADE
+    );
+# Таблица связей сигнала и его источника, заполняется в случае, если нужно иметь такой источник
+# Можно указывать несколько источников для одного сигнала, в том числе его самого
+  sg_link: |
+    CREATE TABLE IF NOT EXISTS sg_link (
+      id INTEGER PRIMARY KEY,
+      source INTEGER NOT NULL,
+      target INTEGER NOT NULL,
+      disable INTEGER,
+      created_at DATETIME,
+      updated_at DATETIME,
+      UNIQUE(source, sg),
+      FOREIGN KEY (source) REFERENCES sg(id) ON DELETE CASCADE,
+      FOREIGN KEY (target) REFERENCES sg(id) ON DELETE CASCADE      
     );
 # Таблица связей сигналов в дерево для поиска
 # может использоваться для добавления сигналов из списков без типизации
 # например, из КП ИО
-  sg_rel: |
-    CREATE TABLE IF NOT EXISTS sg_rel (
+  sg_tree: |
+    CREATE TABLE IF NOT EXISTS sg_tree (
       id INTEGER PRIMARY KEY,
-      source INTEGER NOT NULL,
-      target INTEGER NOT NULL,
+      child INTEGER NOT NULL,
+      parent INTEGER NOT NULL,
       name TEXT,
       disable INTEGER,
       created_at DATETIME,
       updated_at DATETIME,
-      UNIQUE(source, target),
-      FOREIGN KEY (source) REFERENCES sg(id) ON DELETE CASCADE,
-      FOREIGN KEY (target) REFERENCES sg(id) ON DELETE CASCADE
+      UNIQUE(child, parent),
+      FOREIGN KEY (parent) REFERENCES sg(id) ON DELETE CASCADE,
+      FOREIGN KEY (child) REFERENCES sg(id) ON DELETE CASCADE
     );
 # Таблица для генерации алармов
   alm: |
@@ -210,18 +225,6 @@ create:
             SET updated_at = datetime('now')
             WHERE rowid = NEW.rowid;
         END;
-sel:
-  sys: |
-    SELECT * FROM sys;
-  alarm: |
-    SELECT a.sg, a.id_limit, a.type, t.name as type_name,
-           a.val, a.txt, a.dead_h, a.dead_l, a.priority, a.disable
-      FROM alarm a
-      JOIN ref_limit_type t ON a.type = t.id
-      WHERE a.disable IS NULL OR a.disable = 0
-      ORDER BY a.sg, a.id_limit;
-  iec_addr_map: |
-    SELECT id, ca, ioa FROM iec_addr;
 upd:
   sys: 
     sql: |
@@ -306,13 +309,25 @@ upd:
         disable = excluded.disable;
   sg:
     sql: |
-      INSERT INTO sg (id, name, dsc)
-      VALUES (:id,
-              :name,
-              :dsc)
+      INSERT INTO sg (id, dp, dpe, name, dsc, disable)
+      VALUES (
+          :id,
+          (SELECT dp.id FROM dp WHERE dp.name = :dp),
+          (SELECT dpe.id FROM dpe 
+          JOIN dpt ON dpt.id = dpe.dpt
+          JOIN sys ON sys.id = dpt.sys 
+          WHERE dpe.name = :dpe AND sys.name = :sys),
+          :name,
+          :dsc,
+          :disable
+      )
       ON CONFLICT (id) DO UPDATE SET
-        name = excluded.name,
-        dsc = excluded.dsc;
+          dp = excluded.dp,
+          dpe = excluded.dpe,
+          name = excluded.name,
+          dsc = excluded.dsc,
+          disable = excluded.disable
+        ;
     fname: sg
   sg_rel:
     sql: |
@@ -331,10 +346,10 @@ upd:
     sql: |
       INSERT INTO iec_addr (id, asdu, ca, ioa, is_cot, th, conv)
       VALUES (:id, 
-              :iec_asdu,
-              :iec_ca,
-              :iec_ioa,
-              :iec_cot,
+              :asdu,
+              :ca,
+              :ioa,
+              :is_cot,
               :threshold,
               :conv
               )
@@ -345,7 +360,8 @@ upd:
         is_cot = excluded.is_cot,
         th = excluded.th,
         conv = excluded.conv;
-    fname: sg
+    fname: iec_addr
+    nullable: [is_cot, threshold, conv]
 exp:
   sys:
     fname: 'ref/out/sys.csv'
@@ -383,27 +399,32 @@ exp:
         LEFT JOIN grp p ON p.id = c.parent;
   alm:
     fname: 'ref/out/alm.csv'
-    cols: [sg, id_lim, alm_lim_type, val, msg, hyst_h, hyst_l, severity, disable]
+    cols: [id, sg, id_lim, alm_lim_type, val, msg, hyst_h, hyst_l, severity, disable]
     sql: |
-      SELECT a.sg, a.id_lim, t.name, a.val, a.msg,
+      SELECT a.id, a.sg, a.id_lim, t.name, a.val, a.msg,
              a.hyst_h, a.hyst_l, a.severity, a.disable
         FROM alm a
         JOIN alm_lim_type t ON a.lim_type = t.id
         ORDER BY a.sg, a.id_lim;
   sg:
     fname: 'ref/out/sg.csv'
-    cols: ['id', 'name', 'dsc', 'disable', 'iec_asdu', 'iec_ca', 'iec_ioa', 'iec_cot', 'threshold', 'conv']
+    cols: [id, sys, dp, dpe, name, dsc, disable]
     sql: |
-      SELECT
-      ROW_NUMBER() OVER (ORDER BY dp.id, dpe.id) as id,
-      sys.name || ":" || dp.name || '.' || dpe.name as name,
-      dp.dsc || ' ' || dpe.dsc as dsc,
-      grp.type as iec_asdu
-      FROM dp
-      JOIN dpe ON dpe.dpt = dp.dpt
-      JOIN dpt ON dpe.dpt = dpt.id
-      JOIN sys ON sys.id = dpt.sys
-      JOIN grp ON grp.id = dpe.grp
+      SELECT sg.id, sys.name, dp.name, dpe.name, 
+             sg.name, sg.dsc, sg.disable
+      FROM sg
+      JOIN dp ON dp.id = sg.dp
+      JOIN dpe ON dpe.id = sg.dpe
+      JOIN dpt ON dpt.id = dpe.dpt
+      JOIN sys ON sys.id = dpt.sys;
+  iec_addr:
+    fname: 'ref/out/iec_addr'
+    cols: [id, name, dsc, disable, asdu, ca, ioa, is_cot, threshold, conv]
+    sql: |
+      SELECT a.id, sg.name, sg.dsc, a.disable, 
+             a.asdu, a.ca, a.ioa, a.is_cot, a.th, a.conv
+             FROM iec_addr as a
+             JOIN sg ON sg.id = a.id;
 exp_wcc:
   dpt: |
     SELECT dpt.name, dpe.name, grp.type FROM dpt
@@ -437,4 +458,27 @@ exp_wcc:
     JOIN dp ON dp.id = sg.dp
     JOIN dpe ON dpe.id = sg.dpe
     JOIN dpt ON dpt.id = dp.dpt 
-  
+other:
+  sg: # импортируем сигналы без адресов, только список
+  fname: 'ref/out/sg.csv'
+  cols: ['id', 'name', 'dsc', 'disable', 'asdu']
+  sql: |
+    SELECT
+    ROW_NUMBER() OVER (ORDER BY dp.id, dpe.id) as id,
+    sys.name || ":" || dp.name || '.' || dpe.name as name,
+    dp.dsc || ' ' || dpe.dsc as dsc,
+    
+    grp.type as iec_asdu
+    FROM dp
+    JOIN dpe ON dpe.dpt = dp.dpt
+    JOIN dpt ON dpe.dpt = dpt.id
+    JOIN sys ON sys.id = dpt.sys
+    JOIN grp ON grp.id = dpe.grp
+
+read:
+  sql: |
+    SELECT 
+      COALESCE(sg_link.source, sg.id) as s_id, 
+      sg.name 
+    FROM sg
+    LEFT JOIN sg_link ON sg_link.source = sg.id 
