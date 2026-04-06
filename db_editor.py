@@ -315,13 +315,13 @@ def exp_winccoa(is_server: bool, log: logging.Logger):
                 direct = '\\5' if is_server else '\\2'
             else:
                 direct = '\\2' if is_server else '\\5'            
-            ref = f'KP_{num_con}-{asdu}.{ca}.{ioa}'
+            ref = f'KP{num_con}-{asdu}.{ca}.{ioa}'
             iec_type = c.IEC_ADDR_TYPE.get(asdu, '532')
             line = ('ASC (1)/0', 
                     dpe,  # KP_1_ZDV_1.TU.ToOpen
                     dpt,  # ZDV
                     '16',
-                    ref, # "CLN1-45.0.1.0.0.1"
+                    ref, # "KP1-45.0.1.0.0.1"
                     '', '', 0, 0,
                     direct, # \5
                     '0', '0', '1', '01.01.1970 00:00:00.000', '01.01.1970 00:00:00.000', '01.01.1970 00:00:00.000',

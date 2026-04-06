@@ -8,6 +8,7 @@ create:
   order:
     sys: 1
     dpt: 1
+    vt: 1
     grp: 1
     dpe: 1
     dp: 1
@@ -25,7 +26,7 @@ create:
       id INTEGER PRIMARY KEY,
       name TEXT UNIQUE NOT NULL,
       dsc TEXT,
-      disable INTEGER DEFAULT 0,
+      disabled INTEGER DEFAULT 0,
       created_at DATETIME,
       updated_at DATETIME
     );
@@ -36,7 +37,7 @@ create:
       name TEXT NOT NULL,
       dsc TEXT,
       sys INTEGER NOT NULL,
-      disable INTEGER  DEFAULT 0,
+      disabled INTEGER  DEFAULT NULL,
       created_at DATETIME,
       updated_at DATETIME,
       UNIQUE (name, sys),
@@ -50,7 +51,7 @@ create:
       dsc TEXT,
       dpt INTEGER NOT NULL,
       grp INTEGER,
-      disable INTEGER  DEFAULT 0,
+      disabled INTEGER  DEFAULT 0,
       created_at DATETIME,
       updated_at DATETIME,
       UNIQUE (dpt, name),
@@ -61,15 +62,25 @@ create:
   grp: |
     CREATE TABLE IF NOT EXISTS grp (
       id INTEGER PRIMARY KEY,
+      parent INTEGER,
+      vt INTEGER,
       name TEXT UNIQUE NOT NULL,
       dsc TEXT,
       unit INTEGER,
       fmt TEXT,
-      type INTEGER,
-      parent INTEGER,
       created_at DATETIME,
       updated_at DATETIME,
+      FOREIGN KEY (vt) REFERENCES vt(id)      
       FOREIGN KEY (parent) REFERENCES grp(id)
+    );
+# Типы значений 
+  vt: |
+    CREATE TABLE IF NOT EXISTS vt (
+      id INTEGER PRIMARY KEY,
+      name TEXT UNIQUE NOT NULL,
+      dsc TEXT,
+      created_at DATETIME,
+      updated_at DATETIME
     );
 # Технологические объекты
   dp: |
@@ -78,7 +89,7 @@ create:
       name TEXT UNIQUE NOT NULL,
       dsc TEXT,
       dpt INTEGER NOT NULL,
-      disable INTEGER  DEFAULT 0,
+      disabled INTEGER  DEFAULT 0,
       created_at DATETIME,
       updated_at DATETIME,
       FOREIGN KEY (dpt) REFERENCES dpt(id) ON DELETE CASCADE
@@ -101,7 +112,7 @@ create:
       name TEXT,
       dsc TEXT,
       grp INTEGER,
-      disable INTEGER  DEFAULT 0,
+      disabled INTEGER DEFAULT 0,
       created_at DATETIME,
       updated_at DATETIME,
       UNIQUE(dp, dpe),
@@ -116,10 +127,10 @@ create:
       id INTEGER PRIMARY KEY,
       source INTEGER NOT NULL,
       target INTEGER NOT NULL,
-      disable INTEGER,
+      disabled INTEGER DEFAULT 0,
       created_at DATETIME,
       updated_at DATETIME,
-      UNIQUE(source, sg),
+      UNIQUE(source, target),
       FOREIGN KEY (source) REFERENCES sg(id) ON DELETE CASCADE,
       FOREIGN KEY (target) REFERENCES sg(id) ON DELETE CASCADE      
     );
@@ -132,7 +143,7 @@ create:
       child INTEGER NOT NULL,
       parent INTEGER NOT NULL,
       name TEXT,
-      disable INTEGER,
+      disabled INTEGER DEFAULT 0,
       created_at DATETIME,
       updated_at DATETIME,
       UNIQUE(child, parent),
@@ -151,7 +162,7 @@ create:
       hyst_h REAL,
       hyst_l REAL,
       severity INTEGER,
-      disable INTEGER  DEFAULT 0,
+      disabled INTEGER DEFAULT 0,
       created_at DATETIME,
       updated_at DATETIME,
       UNIQUE (sg, id_lim),
@@ -228,56 +239,62 @@ create:
 upd:
   sys: 
     sql: |
-      INSERT INTO sys(id, name, dsc, disable)
+      INSERT INTO sys(id, name, dsc)
       VALUES (:id, 
               :name, 
-              :dsc, 
-              :disable)
+              :dsc)
       ON CONFLICT (id) DO UPDATE SET
         name = excluded.name,
-        dsc = excluded.dsc,
-        disable = excluded.disable;
+        dsc = excluded.dsc;
     required: [id, name]
     fname: sys  
+  vt:
+    sql: |
+      INSERT INTO vt(id, name, dsc)
+      VALUES (:id, 
+              :name, 
+              :dsc)
+      ON CONFLICT (id) DO UPDATE SET
+        name = excluded.name,
+        dsc = excluded.dsc;
+    required: [id, name]
+    fname: vt    
   dpt: 
     sql: |
-      INSERT INTO dpt (id, sys, name, dsc, disable)
+      INSERT INTO dpt (id, sys, name, dsc)
       VALUES (:id,
               (SELECT id FROM sys WHERE name = :sys),
               :name,
-              :dsc, 
-              :disable)
+              :dsc)
       ON CONFLICT (id) DO UPDATE SET
         sys = excluded.sys,
         name = excluded.name,
-        dsc = excluded.dsc,
-        disable = excluded.disable;
+        dsc = excluded.dsc;
     required: [id, sys, name]
-    dpt: dpt
+    fname: dpt
   dpe: 
     sql: |
-      INSERT INTO dpe (id, dpt, name, dsc, grp, disable)
+      INSERT INTO dpe (id, dpt, name, dsc, grp)
       VALUES (:id,
               (SELECT dpt.id FROM dpt
                JOIN sys ON dpt.sys = sys.id
                WHERE sys.name = :sys AND dpt.name = :dpt),
               :name,
               :dsc, 
-              :grp, 
-              :disable)
+              :grp)
       ON CONFLICT (id) DO UPDATE SET
         dpt = excluded.dpt,
         name = excluded.name,
         dsc = excluded.dsc,
-        grp = excluded.grp,
-        disable = excluded.disable;
+        grp = excluded.grp;
     required: [sys, dpt, id, name]
     fname: dpe
   grp:
     sql: |
-      INSERT INTO grp (id, type, name, dsc, unit, fmt, parent)
+      INSERT INTO grp (id, vt, name, dsc, unit, fmt, parent)
       VALUES (:id,
-              :type,
+              (SELECT vt.id FROM vt
+               WHERE vt.name = :vt),
               :name,
               :dsc,
               :unit,
@@ -285,7 +302,7 @@ upd:
               :parent
               )
       ON CONFLICT (id) DO UPDATE SET
-        type = excluded.type,
+        vt = excluded.vt,
         name = excluded.name,
         dsc = excluded.dsc,
         unit = excluded.unit,
@@ -293,23 +310,21 @@ upd:
         parent = excluded.parent;
   dp:
     sql: |
-      INSERT INTO dp (id, dpt, name, dsc, disable)
+      INSERT INTO dp (id, dpt, name, dsc)
       VALUES (:id,
               (SELECT dpt.id FROM dpt
               JOIN sys ON dpt.sys = sys.id
               WHERE sys.name = :sys AND dpt.name = :dpt),
               :name,
-              :dsc,
-              :disable
+              :dsc
               )
       ON CONFLICT (id) DO UPDATE SET
         dpt = excluded.dpt,
         name = excluded.name,
-        dsc = excluded.dsc,
-        disable = excluded.disable;
+        dsc = excluded.dsc;
   sg:
     sql: |
-      INSERT INTO sg (id, dp, dpe, name, dsc, disable)
+      INSERT INTO sg (id, dp, dpe, name, dsc)
       VALUES (
           :id,
           (SELECT dp.id FROM dp WHERE dp.name = :dp),
@@ -318,15 +333,13 @@ upd:
           JOIN sys ON sys.id = dpt.sys 
           WHERE dpe.name = :dpe AND sys.name = :sys),
           :name,
-          :dsc,
-          :disable
+          :dsc
       )
       ON CONFLICT (id) DO UPDATE SET
           dp = excluded.dp,
           dpe = excluded.dpe,
           name = excluded.name,
-          dsc = excluded.dsc,
-          disable = excluded.disable
+          dsc = excluded.dsc
         ;
     fname: sg
   sg_rel:
@@ -365,28 +378,28 @@ upd:
 exp:
   sys:
     fname: 'ref/out/sys.csv'
-    cols: [id, name, dsc, disable]
+    cols: [id, name, dsc]
     sql: |
-      SELECT id, name, dsc, disable FROM sys;
+      SELECT id, name, dsc FROM sys;
   dpt:
     fname: 'ref/out/dpt.csv'
-    cols: [id, sys, dpt, dsc, disable]
+    cols: [id, sys, dpt, dsc]
     sql: |
-      SELECT dpt.id, sys.name, dpt.name, dpt.dsc, dpt.disable FROM dpt
+      SELECT dpt.id, sys.name, dpt.name, dpt.dsc FROM dpt
       JOIN sys ON dpt.sys = sys.id;
   dpe:
     fname: 'ref/out/dpe.csv'
-    cols: [id, sys, dpt, name, dsc, grp, disable]
+    cols: [id, sys, dpt, name, dsc, grp]
     sql: |
       SELECT dpe.id, sys.name, dpt.name, dpe.name, dpe.dsc,
-             dpe.grp, dpe.disable FROM dpe
+             dpe.grp FROM dpe
       JOIN dpt ON dpe.dpt = dpt.id
       JOIN sys ON dpt.sys = sys.id;
   dp:
     fname: 'ref/out/dp.csv'
-    cols: [id, sys, dpt, name, dsc, disable]
+    cols: [id, sys, dpt, name, dsc]
     sql: |
-      SELECT dp.id, sys.name, dpt.name, dp.name, dp.dsc, dp.disable FROM dp
+      SELECT dp.id, sys.name, dpt.name, dp.name, dp.dsc FROM dp
       JOIN dpt ON dp.dpt = dpt.id
       JOIN sys ON dpt.sys = sys.id;
   grp:
@@ -394,24 +407,24 @@ exp:
     cols: [id, parent, name, dsc, unit, fmt, type]
     sql: |
       SELECT c.id, p.name, c.name, c.dsc,
-        c.unit, c.fmt, c.type
+        c.unit, c.fmt, c.vt
         FROM grp c
         LEFT JOIN grp p ON p.id = c.parent;
   alm:
     fname: 'ref/out/alm.csv'
-    cols: [id, sg, id_lim, alm_lim_type, val, msg, hyst_h, hyst_l, severity, disable]
+    cols: [id, sg, id_lim, alm_lim_type, val, msg, hyst_h, hyst_l, severity]
     sql: |
       SELECT a.id, a.sg, a.id_lim, t.name, a.val, a.msg,
-             a.hyst_h, a.hyst_l, a.severity, a.disable
+             a.hyst_h, a.hyst_l, a.severity
         FROM alm a
         JOIN alm_lim_type t ON a.lim_type = t.id
         ORDER BY a.sg, a.id_lim;
   sg:
     fname: 'ref/out/sg.csv'
-    cols: [id, sys, dp, dpe, name, dsc, disable]
+    cols: [id, sys, dp, dpe, name, dsc]
     sql: |
       SELECT sg.id, sys.name, dp.name, dpe.name, 
-             sg.name, sg.dsc, sg.disable
+             sg.name, sg.dsc
       FROM sg
       JOIN dp ON dp.id = sg.dp
       JOIN dpe ON dpe.id = sg.dpe
@@ -419,9 +432,9 @@ exp:
       JOIN sys ON sys.id = dpt.sys;
   iec_addr:
     fname: 'ref/out/iec_addr'
-    cols: [id, name, dsc, disable, asdu, ca, ioa, is_cot, threshold, conv]
+    cols: [id, name, dsc, asdu, ca, ioa, is_cot, threshold, conv]
     sql: |
-      SELECT a.id, sg.name, sg.dsc, a.disable, 
+      SELECT a.id, sg.name, sg.dsc, 
              a.asdu, a.ca, a.ioa, a.is_cot, a.th, a.conv
              FROM iec_addr as a
              JOIN sg ON sg.id = a.id;
@@ -461,7 +474,7 @@ exp_wcc:
 other:
   sg: # импортируем сигналы без адресов, только список
   fname: 'ref/out/sg.csv'
-  cols: ['id', 'name', 'dsc', 'disable', 'asdu']
+  cols: ['id', 'name', 'dsc', 'asdu']
   sql: |
     SELECT
     ROW_NUMBER() OVER (ORDER BY dp.id, dpe.id) as id,

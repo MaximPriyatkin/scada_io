@@ -1,4 +1,4 @@
-id	sys	dpt	name	dsc	grp	disable
+id	sys	dpt	name	dsc	grp
 1	sdku	ZDV	Pin	Давление на входе	1
 2	sdku	ZDV	Pout	Давление на выходе	1
 3	sdku	ZDV	ToOpen	Открыть	3
